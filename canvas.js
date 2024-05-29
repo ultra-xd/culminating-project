@@ -12,6 +12,8 @@ class Canvas {
     }
 
     mainloop() {
+        this.HTMLElement.width = window.innerWidth;
+        this.HTMLElement.height = window.innerHeight;
         this.handler.tick();
         this.handler.draw();
     }

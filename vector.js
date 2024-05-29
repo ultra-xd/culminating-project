@@ -75,8 +75,13 @@ class Vector2 {
         return (this.x * vector2.x) + (this.y * vector2.y);
     }
 
+    equals(vector2) {
+        return this.x == vector2.x && this.y == vector2.y;
+    }
+
     static fromPolarForm(magnitude, angle) { // angle in radians
         return new Vector2(Math.cos(angle) * magnitude, Math.sin(angle) * magnitude);
     }
 }
 
+console.log(new Vector2(1, 1) == new Vector2(1, 1));
