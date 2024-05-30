@@ -1,31 +1,35 @@
 "use strict";
 
+// class for arena where obstacles, enemies & player is stored
 class Arena {
     constructor() {
-        this.enemies = [];
-        this.obstructions = [];
-        this.width = 15;
-        this.height = 10;
-        this.arenaType = 1;
-        this.player = new Player(1, 1, this);
-        this.generateArena();
+        this.enemies = []; // create array of enemies
+        this.obstructions = []; // create array of coordinates for walls on map
+        this.width = 15; // set # of tiles horizontally on map
+        this.height = 10; // set # of tiles vertically on map
+        this.arenaType = 1; // determine the map layout using ID
+        this.player = new Player(1, 1, this); // create a new player
+        this.generateArena(); // generate map layout
     }
 
+    // method to generate arena layout
     generateArena() {
-        if (arrayIncludes(Object.keys(ARENAS), this.arenaType)) {
-            this.obstructions = ARENAS[this.arenaType];
+        if (arrayIncludes(Object.keys(ARENAS), this.arenaType)) { // check if there is an arena with stored ID
+            this.obstructions = ARENAS[this.arenaType]; // get array of walls on the arena
         } else {
-            this.obstructions = [];
+            this.obstructions = []; // generate no walls if ID is not valid
         }
     }
 
+    // method to set the type of arena & update arena layout
     setArenaType(arenaType) {
-        this.arenaType = arenaType;
-        this.generateArena();
+        this.arenaType = arenaType; // update arena ID
+        this.generateArena(); // update arena layout
     }
 
+    // method to update the arena every tick
     tick(keysPressed) {
-        this.player.tick(keysPressed);
+        this.player.tick(keysPressed); // update the player every tick
     }
 
     // method to convert coordinates to pixels on canvas
@@ -53,7 +57,7 @@ class Arena {
         return new Vector2(coords.getX() * pixelsPerTile + pixelsXOffset, canvasHeight - (coords.getY() * pixelsPerTile + pixelsYOffset)); // return the coordinates of the x & y pixels in a vector
     }
 
-    // function to return # of pixels in 1 tile
+    // method to return # of pixels in 1 tile
     getUnitLength() {
         const canvasWidth = canvas.getWidth(); // get width of canvas in pixels
         const canvasHeight = canvas.getHeight(); // get height of canvas in pixels
