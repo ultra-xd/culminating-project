@@ -16,7 +16,7 @@ class Handler {
         this.arena.draw(context);
     }
 
-    tick() {
-        this.arena.tick();
+    tick(keysPressed) {
+        this.arena.tick(keysPressed);
     }
 }

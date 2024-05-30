@@ -1,6 +1,10 @@
 "use strict";
 
 class Vector2 {
+
+    static ZERO_VECTOR = new Vector2(0, 0);
+    static I_UNIT = new Vector2(1, 0);
+    static J_UNIT = new Vector2(0, 1);
     constructor(x, y) {
         this.x = x;
         this.y = y;
@@ -68,7 +72,14 @@ class Vector2 {
     }
 
     divide(scalar) {
+        if (this.scalar == 0) {
+            return undefined;
+        }
         return new Vector2(this.x / scalar, this.y / scalar);
+    }
+
+    unit() {
+        return this.divide(this.getMagnitude());
     }
 
     dot(vector2) {
