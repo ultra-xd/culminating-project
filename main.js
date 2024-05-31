@@ -1,8 +1,9 @@
 "use strict";
 
-let canvas;
+let canvas; // declare global variable for canvas
 
+// main function called on load of website
 function main() {
-    canvas = new Canvas("canvas");
-    canvas.start();
+    canvas = new Canvas("canvas"); // create new canvas
+    canvas.start(); // start the game loop for canvas
 }
