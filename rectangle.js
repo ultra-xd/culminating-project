@@ -9,6 +9,7 @@ class Rectangle {
     }
 
     intersectsWith(rectangle) {
+        console.log(`1: ${this.toString()} 2:${rectangle.toString()}`)
         if (this.x1 < rectangle.x2 &&
             this.x2 > rectangle.x1 &&
             this.y1 < rectangle.y2 &&
@@ -17,5 +18,8 @@ class Rectangle {
             return true;
         }
         return false;
+    }
+    toString() {
+        return `Rectangle(${this.x1},${this.y1},${this.x2}, ${this.y2})`;
     }
 }
