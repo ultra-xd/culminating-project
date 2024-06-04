@@ -57,8 +57,3 @@ function arrayLastIndexOf(array, element) {
     }
     return undefined; // return undefined if element is not in the array
 }
-
-let array = [1, 2, 1, 4, 5, 2, 9, 6, 4, 8, 6];
-// arrayDelete(array, 3);
-console.log(arrayIndexOf(array, 1));
-console.log(arrayLastIndexOf(array, 1))

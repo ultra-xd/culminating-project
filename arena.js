@@ -3,13 +3,13 @@
 // class for arena where obstacles, enemies & player is stored
 class Arena {
     constructor() {
-        this.enemies = []; // create array of enemies
+        this.arenaType = 1; // determine the map layout using ID
         this.obstructions = []; // create array of coordinates for walls on map
+        this.generateArena(); // generate map layout
+        this.enemies = [new Enemy(4, 4, Enemy.ZOMBIE, this)]; // create array of enemies
         this.width = 15; // set # of tiles horizontally on map
         this.height = 10; // set # of tiles vertically on map
-        this.arenaType = 1; // determine the map layout using ID
         this.player = new Player(1, 1, this); // create a new player
-        this.generateArena(); // generate map layout
     }
 
     // method to generate arena layout
@@ -30,6 +30,9 @@ class Arena {
     // method to update the arena every tick
     tick(keysPressed) {
         this.player.tick(keysPressed); // update the player every tick
+        for (let enemy of this.enemies) { // iterate through all enemies in the arena
+            enemy.tick(); // tick all enemies
+        }
     }
 
     // method to convert coordinates to pixels on canvas
@@ -57,6 +60,14 @@ class Arena {
         return new Vector2(coords.getX() * pixelsPerTile + pixelsXOffset, canvasHeight - (coords.getY() * pixelsPerTile + pixelsYOffset)); // return the coordinates of the x & y pixels in a vector
     }
 
+    // method to return if given coordinates is a wall
+    isWall(coordinates) {
+        return (arrayIncludes(this.obstructions, coordinates) ||
+                coordinates.getX() < 0 || coordinates.getX() >= this.width ||
+                coordinates.getY() < 0 || coordinates.getY() >= this.height
+                )
+    }
+
     // method to return # of pixels in 1 tile
     getUnitLength() {
         const canvasWidth = canvas.getWidth(); // get width of canvas in pixels
@@ -73,7 +84,7 @@ class Arena {
         }
     }
 
-    // function to draw arena
+    // function to draw arena on canvas
     draw(context) {
         const canvasWidth = canvas.getWidth(); // get width of canvas in pixels
         const canvasHeight = canvas.getHeight(); // get height of canvas in pixels
@@ -112,12 +123,26 @@ class Arena {
         context.beginPath(); // start path of context
         context.lineWidth = "3"; // customize width of lines to 3 pixels
         context.strokeStyle = "white"; // customize lines to be white
+        context.fillStyle = "black";
+        context.font = "60px Consolas";
         for (let x = 0; x < this.width; x++) { // iterate through all x coordinates
             for (let y = 0; y < this.height; y++) { // iterate through all y coordinates
                 context.rect(x * pixelsPerTile + pixelsXOffset, canvasHeight - ((y + 1) * pixelsPerTile + pixelsYOffset), pixelsPerTile, pixelsPerTile); // draw a white border around each tile
+                let heatmapValue = this.player.getPathfindingAlgorithm().heatmap[`(${x}, ${y})`];
+                let pixels = this.coordsToPixels(new Vector2(x, y));
+                context.fillText(Math.round(heatmapValue), pixels.getX(), pixels.getY(), pixelsPerTile);
             }
         }
+
         context.stroke(); // draw all rectangles
         this.player.draw(context); // draw the player
+
+        for (let enemy of this.enemies) { // iterate through all enemies
+            enemy.draw(context); // draw all enemies
+        }
+    }
+
+    getPlayer() {
+        return this.player;
     }
 }

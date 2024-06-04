@@ -107,8 +107,24 @@ class Vector2 {
         return this.x == vector2.x && this.y == vector2.y; // return if corresponding vector components are equal
     }
 
+    isUndefined() {
+        return this.x == undefined || this.y == undefined || isNaN(this.x) || isNaN(this.y);
+    }
+
     // static method to return a new vector based on polar form (magnitude & angle)
     static fromPolarForm(magnitude, angle) { // angle in radians
         return new Vector2(Math.cos(angle) * magnitude, Math.sin(angle) * magnitude); // return the vector with x & y components based on magnitude & direction (x = cosa * magnitude, y = sina * magnitude)
+    }
+    toString() {
+        return `(${this.x}, ${this.y})`;
+    }
+
+    static sum(/**/) {
+        let args = arguments;
+        let vector = Vector2.ZERO_VECTOR;
+        for (let v of args) {
+            vector = v.add(vector);
+        }
+        return vector;
     }
 }

@@ -1,60 +1,29 @@
 "use strict";
 
-// class for player where the movement & collisions of player are tracked
-class Player {
-    constructor(x, y, arena) {
-        this.arena = arena; // store the arena the player is in
-        this.position = new Vector2(x, y); // create a position vector for the player
-        this.size = 1; // store the size of the player in tile units (will be a square)
-        this.controlledVelocity = Vector2.ZERO_VECTOR; // set the player velocity that the player can control to 0
-        this.forcedVelocity = Vector2.ZERO_VECTOR; // set the player velocity that the player cannot control to 0
-        this.direction = "down"; // set the player direction to be facing downwards
-        this.defaultSpeed = Math.E;
-        this.pathfindingAlgorithm = new PathfindingAlgorithm(new Vector2(Math.floor(this.position.getX()), Math.floor(this.position.getY())), 15, this.arena);
-        this.pathfindingAlgorithm.generateHeatMap();
-        this.pathfindingLastUpdated = 0;
-        this.animationFrame = 1;
-        this.animationTicks = 0;
+
+// class for enemy
+class Enemy {
+    static ZOMBIE = 0;
+    constructor(x, y, type, arena) {
+        this.position = new Vector2(x, y);
+        this.controlledVelocity = Vector2.ZERO_VECTOR;
+        this.forcedVelocity = Vector2.ZERO_VECTOR;
+        this.arena = arena;
+        this.type = type;
+        this.size = 0.5;
     }
 
-    // method to update the player every tick
-    tick(keysPressed) {
-        this.controlledVelocity = Vector2.ZERO_VECTOR; // reset the controlled player velocity to 0
-        for (let key of keysPressed) { // iterate through all keys that are pressed
-            if (key == "w") { // check if W key is being pressed
-                this.controlledVelocity = this.controlledVelocity.add(Vector2.J_UNIT); // increase velocity in positive Y direction
-            }
-            if (key == "d") { // check if D key is being pressed
-                this.controlledVelocity = this.controlledVelocity.add(Vector2.I_UNIT); // increase velocity in positive X direction
-            }
-            if (key == "a") { // check if A key is being pressed
-                this.controlledVelocity = this.controlledVelocity.add(Vector2.I_UNIT.multiply(-1)); // increase velocity in negative X direction
-            }
-            if (key == "s") { // check if S key is being pressed
-                this.controlledVelocity = this.controlledVelocity.add(Vector2.J_UNIT.multiply(-1)); // increase velocity in negative Y direction
-            }
+    tick() {
+        this.pathfindingAlgorithm = this.arena.getPlayer().getPathfindingAlgorithm();
+        this.controlledVelocity = this.pathfindingAlgorithm.getDecimalVector(this.position);
+        console.log(this.controlledVelocity)
+        if (this.controlledVelocity == undefined || this.controlledVelocity.isUndefined()) {
+            this.controlledVelocity = Vector2.ZERO_VECTOR;
         }
-        this.controlledVelocity = (!this.controlledVelocity.equals(Vector2.ZERO_VECTOR)) ? this.controlledVelocity.unit().multiply(this.defaultSpeed): Vector2.ZERO_VECTOR; // set controllable velocity to have magnitude of 1 if it is not 0
+        // console.log(this.controlledVelocity);
         let totalVelocity = this.controlledVelocity.add(this.forcedVelocity);
-        this.position = this.position.add(this.controlledVelocity.add(this.forcedVelocity).divide(TPS)); // change position based on velocity
+        this.position = this.position.add(totalVelocity.divide(TPS));
 
-        let angle = this.controlledVelocity.getAngle();
-        if (angle != undefined) {
-            if (Math.PI / 4 <= angle && angle <= 3 * Math.PI / 4) {
-                this.direction = "up";
-            }
-            else if (3 * Math.PI / 4 < angle && angle < 5 * Math.PI / 4) {
-                this.direction = "left";
-            }
-            else if (5 * Math.PI / 4 <= angle && angle <= 7 * Math.PI / 4) {
-                this.direction = "down";
-            }
-            else {
-                this.direction = "right";
-            }
-        }
-
-        // check for collisions
         while (true) { // keep iterating until not colliding with any walls
             let closestWalls = this.getClosestWalls(); // get all walls closest to player
             let collided = false; // create a variable to keep track of if the player is collding with a wall
@@ -137,33 +106,9 @@ class Player {
                 break; // exit loop
             }
         }
-        this.pathfindingLastUpdated++;
-        if (this.pathfindingLastUpdated == 10) {
-            this.pathfindingLastUpdated = 0;
-            this.pathfindingAlgorithm.setTarget(new Vector2(Math.floor(this.position.getX()), Math.floor(this.position.getY())));
-        }
-        if (!this.controlledVelocity.equals(Vector2.ZERO_VECTOR)) {
-            this.animationTicks++;
-            if (this.animationTicks >= 5) {
-                this.animationTicks = 0;
-                this.animationFrame++;
-            }
-            if (this.animationFrame > 8) {
-                this.animationFrame = 1;
-            }
-        }
-        else {
-            this.animationTicks = 0;
-            this.animationFrame = 1;
-        }
+        // console.log(this.position)
     }
 
-    // method to return the hitbox of the player
-    getHitbox() {
-        return new Rectangle(this.position.getX() - this.size / 2, this.position.getY() - this.size / 2, this.size, this.size); // return a rectangle object defining the hitbox of the player
-    }
-
-     // function to get the closest walls to the player
     getClosestWalls() {
         let smallestDistance = undefined; // declare variable storing the smallest distance from any wall to player found so far
         let coordinates = []; // initalize array to store any coordinates of the closest walls
@@ -182,19 +127,15 @@ class Player {
         return coordinates; // return the list of walls closest to player
     }
 
-    getPathfindingAlgorithm() {
-        return this.pathfindingAlgorithm;
+    getHitbox() {
+        return new Rectangle(this.position.getX() - this.size / 2, this.position.getY() - this.size / 2, this.size, this.size); // return a rectangle object defining the hitbox of the player
     }
 
-    // method to draw player
     draw(context) {
-        // context.fillStyle = "black";
+        // console.log("drawing enemy")
+        context.fillStyle = "red";
         const pixelCoords = this.arena.coordsToPixels(this.position);
         const unitLength = this.arena.getUnitLength();
-        // context.fillRect(pixelCoords.getX() - (unitLength * this.size / 2), pixelCoords.getY() - (unitLength * this.size / 2), unitLength * this.size, unitLength * this.size);
-
-        let file = `files/assets/character/${this.direction}/${this.animationFrame}${this.direction}.png`;
-        let image = imageLoader[file];
-        context.drawImage(image, pixelCoords.getX() - (unitLength * this.size / 2), pixelCoords.getY() - (unitLength * this.size / 2), unitLength * this.size, unitLength * this.size);
+        context.fillRect(pixelCoords.getX() - (unitLength * this.size / 2), pixelCoords.getY() - (unitLength * this.size / 2), unitLength * this.size, unitLength * this.size);
     }
 }
