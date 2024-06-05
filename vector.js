@@ -107,24 +107,28 @@ class Vector2 {
         return this.x == vector2.x && this.y == vector2.y; // return if corresponding vector components are equal
     }
 
+    // method to check if a vector is invalid
     isUndefined() {
-        return this.x == undefined || this.y == undefined || isNaN(this.x) || isNaN(this.y);
+        return this.x == undefined || this.y == undefined || isNaN(this.x) || isNaN(this.y); // return true if any of the components of the vectors are invalid
     }
 
     // static method to return a new vector based on polar form (magnitude & angle)
     static fromPolarForm(magnitude, angle) { // angle in radians
         return new Vector2(Math.cos(angle) * magnitude, Math.sin(angle) * magnitude); // return the vector with x & y components based on magnitude & direction (x = cosa * magnitude, y = sina * magnitude)
     }
+
+    // method to return a string representation of the vector
     toString() {
         return `(${this.x}, ${this.y})`;
     }
 
+    // static method to add together multiple vectors
     static sum(/**/) {
-        let args = arguments;
-        let vector = Vector2.ZERO_VECTOR;
-        for (let v of args) {
-            vector = v.add(vector);
+        let args = arguments; // get an array of vectors
+        let vector = Vector2.ZERO_VECTOR; // create a zero vector to add all the vectors to
+        for (let v of args) { // iterate through all vectors
+            vector = v.add(vector); // sum vectors
         }
-        return vector;
+        return vector; // return the resultant vector
     }
 }

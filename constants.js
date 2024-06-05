@@ -7,7 +7,7 @@ const DIAGONAL = 2;
 
 // create dictionary for all arenas
 const ARENAS = {
-    1: [ // store array of walls
+    1: [ // store array of wall coordinates
         new Vector2(2, 2),
         new Vector2(2, 3),
         new Vector2(2, 4),
@@ -25,8 +25,8 @@ const ARENAS = {
     ]
 };
 
-const imageLoader = {};
-const imageFiles = [
+const IMAGE_LOADER = {}; // create object with file names attached to their image objects
+const imageFiles = [ // store image file links
     "files/assets/character/down/1down.png",
     "files/assets/character/down/2down.png",
     "files/assets/character/down/3down.png",
@@ -61,10 +61,11 @@ const imageFiles = [
     "files/assets/character/up/8up.png"
 ];
 
+// function to load images into object storing images
 function loadImages() {
-    for (let file of imageFiles) {
-        const image = new Image();
-        image.src = file;
-        imageLoader[file] = image;
+    for (let file of imageFiles) { // iterate through all files in the array
+        const image = new Image(); // create new image object
+        image.src = file; // change source of image to file
+        IMAGE_LOADER[file] = image; // add image to object with the key being the file name
     }
 }

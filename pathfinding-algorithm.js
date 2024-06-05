@@ -10,6 +10,7 @@ steps:
 */
 
 class PathfindingAlgorithm {
+    // create an array for all the surrounding nodes of a node (straight & diagonal)
     static NEIGHBOURS = [
         new Vector2(1, 0),
         new Vector2(1, 1),
@@ -21,123 +22,152 @@ class PathfindingAlgorithm {
         new Vector2(1, -1)
     ];
     constructor(target, maxDistance, arena) {
-        this.target = target;
-        this.maxDistance = maxDistance;
-        this.arena = arena;
-        this.heatmap = {};
+        this.target = target; // set target (x & y must be integer values)
+        this.maxDistance = maxDistance; // find a distance value to stop generating the heatmap at
+        this.arena = arena; // get the arena to determine which node is a wall
+        this.heatmap = {}; // create a dictionary to store all distance values
     }
 
+    // function to generate heatmap (a object with coordinates corresponding to their distance from end node)
     generateHeatMap() {
-        this.heatmap = {};
+        /*
+        to generate heatmap:
+        - start at ending node (this will be the investigated node)
+        - for each neighbour node (nodes around node being investigated), calculate distance from that node to ending node using euclidian distances
+            - if the node happens to have a wall, set node to very large distance (65535 is used)
+            - if the node has already been checked, only set node distance if the calculated node distance is less than that of previous calculated
+        - change node being investigated
+        - repeat until whole map is covered or until no more nodes can be checked without exceeding distance limit
+        */
+        this.heatmap = {}; // clear heatmap
 
+        // create variables to determine which node should be investigated
         let currentX = this.target.getX();
         let currentY = this.target.getY();
 
+        // create distance variable & set to 0
         let distance = 0;
 
+        // create array of nodes to be checked
         let unvisitedNodes = [];
-        this.heatmap[this.target.toString()] = distance;
+        this.heatmap[this.target.toString()] = distance; // add ending node to array of unvisited nodes and to heatmap
         arrayPush(unvisitedNodes, this.target);
 
+        // repeat while there is still nodes to check
         while (unvisitedNodes.length != 0) {
-            for (let node of PathfindingAlgorithm.NEIGHBOURS) {
-                let point = new Vector2(currentX + node.getX(), currentY + node.getY());
-                let pointString = point.toString();
-                if (!this.arena.isWall(point)) {
-                    let distanceFromPoint = (node.getX() != 0 && node.getY() != 0) ? distance + Math.SQRT2: distance + 1;
-                    if (distanceFromPoint <= this.maxDistance) {
-                        if (arrayIncludes(Object.keys(this.heatmap), point.toString())) {
-                            if (this.heatmap[pointString] > distanceFromPoint) {
-                                this.heatmap[pointString] = distanceFromPoint;
-                                arrayPush(unvisitedNodes, point);
+            for (let node of PathfindingAlgorithm.NEIGHBOURS) { // iterate through each neighbour node
+                let point = new Vector2(currentX + node.getX(), currentY + node.getY()); // get coordinates of neighbour node
+                let pointString = point.toString(); // get string representation of node to put in object
+                if (!this.arena.isWall(point)) { // check if tile is a wall
+                    let distanceFromPoint = (node.getX() != 0 && node.getY() != 0) ? distance + Math.SQRT2: distance + 1; // calculate distance from ending node by adding to current distance (sqrt2 if diagonal, 1 if straight (euclidian distances))
+                    if (distanceFromPoint <= this.maxDistance) { // check if distance in within distance limit
+                        if (arrayIncludes(Object.keys(this.heatmap), point.toString())) { // check if the node's distance has already been calculated once by checking if the tile exists on the heatmap
+                            if (this.heatmap[pointString] > distanceFromPoint) { // check if the distance just calculated is less than the distance calculated prior
+                                this.heatmap[pointString] = distanceFromPoint; // add tile to heatmap with the distance that corresponds
+                                arrayPush(unvisitedNodes, point); // add tile to nodes whose neighbour nodes need to be checked
                             }
-                        } else {
-                            this.heatmap[pointString] = distanceFromPoint;
-                            arrayPush(unvisitedNodes, point);
+                        } else { // otherwise, node is new and we can add the distance to the heatmap without worrying about the previous distance
+                            this.heatmap[pointString] = distanceFromPoint; // add tile to heatmap with the distance that corresponds
+                            arrayPush(unvisitedNodes, point); // add tile to nodes whose neighbour nodes need to be checked
                         }
                     }
-                } else {
-                    this.heatmap[pointString] = 65535;
+                } else { // otherwise, tile is a wall
+                    this.heatmap[pointString] = 65535; // add tile to heatmap with extremely large distance so that the algorithm pathfinds out of the wall
+                    // we don't need to add this tile to the list of unvisited nodes since it is a wall
                 }
             }
+            // check if the list of unvisited nodes is empty
             if (unvisitedNodes.length != 0) {
-                let newNode = unvisitedNodes[0];
-                distance = this.heatmap[newNode];
-                currentX = newNode.getX();
+                // if not,
+                arrayDelete(unvisitedNodes, 0); // delete the old node
+                let newNode = unvisitedNodes[0]; // change to a new node that needs to be checked
+                distance = this.heatmap[newNode]; // get the new distance
+                currentX = newNode.getX(); // get new coordinates of node
                 currentY = newNode.getY();
-                arrayDelete(unvisitedNodes, 0);
             }
         }
     }
 
+    // function to get a unit vector in the direction of closest path
     getVector(node) {
-        if (this.heatmap == undefined) {
-            this.generateHeatMap();
+        // generate a heatmap if it does not exist yet
+        if (this.heatmap == undefined) { // check if the heatmap exists
+            this.generateHeatMap(); // generate new heatmap if it does not
         }
-        let neighbourVectors = [];
-        for (let i = 0; i < PathfindingAlgorithm.NEIGHBOURS.length; i++) {
-            let relativeNode = PathfindingAlgorithm.NEIGHBOURS[i];
-            let coords = node.add(relativeNode);
-            let coordsString = coords.toString();
-            if (arrayIncludes(Object.keys(this.heatmap), coordsString)) {
-                let distance = this.heatmap[coordsString];
-                let vector = Vector2.fromPolarForm(Math.E ** (-1 * distance), i * 0.25 * Math.PI);
-                arrayPush(neighbourVectors, vector);
+        let neighbourVectors = []; // create a array to store neighbouring vectors
+        for (let i = 0; i < PathfindingAlgorithm.NEIGHBOURS.length; i++) { // iterate through neighbouring nodes
+            let relativeNode = PathfindingAlgorithm.NEIGHBOURS[i]; // get coordinates of vector relative to node
+            let coords = node.add(relativeNode); // get absolute coordinates of node
+            let coordsString = coords.toString(); // get string representation of coords to put in heatmap
+            if (arrayIncludes(Object.keys(this.heatmap), coordsString)) { // check if the coordinates have been generated by heatmap
+                let distance = this.heatmap[coordsString]; // get the corresponding distance associated with the coordinate with heatmap
+                let vector = Vector2.fromPolarForm(Math.E ** (-1 * distance), i * 0.25 * Math.PI); // get a vector in the direction of the vector & run it through a decreasing function (y = e^-x) to make it so the vector gets shorter the further it is from the endnode
+                arrayPush(neighbourVectors, vector); // add vector to array containing neighbouring vectors
             }
         }
+        // create new zero vector to add all vectors together
         let vector = Vector2.ZERO_VECTOR;
-        for (let v of neighbourVectors) {
-            vector = vector.add(v);
+        for (let v of neighbourVectors) { // iterate through all neighbouring vectors
+            vector = vector.add(v); // add together
         }
-        return vector.unit();
+        return vector.unit(); // return the resultant vector (and make it a unit vector)
     }
 
+    // function to get a vector, not limited to integer coiordinates
     getDecimalVector(position) {
-        let integerPosition = new Vector2(Math.floor(position.getX()), Math.floor(position.getY()))
-        let integerVector = this.getVector(integerPosition);
+        /*
+        uses linear interpolation to interpolate direction based on 3 different vectors generated near the player
+        */
+        let integerPosition = new Vector2(Math.floor(position.getX()), Math.floor(position.getY())) // get the integer coordinates of vector
+        let integerVector = this.getVector(integerPosition); // get the direction vector based on integer coordiantes
 
-        let horizontalComponent1, horizontalComponent2, distanceX;
-        if (Math.round(position.getX()) < position.getX()) {
-            horizontalComponent1 = this.getVector(integerPosition.subtract(Vector2.I_UNIT)).getX();
-            horizontalComponent2 = integerVector.getX();
-            distanceX = position.getX() - integerPosition.getX() + 0.5;
-        } else {
-            horizontalComponent1 = integerVector.getX();
-            horizontalComponent2 = this.getVector(integerPosition.add(Vector2.I_UNIT)).getX();
-            distanceX = position.getX() - integerPosition.getX() - 0.5;
+        let horizontalComponent1, horizontalComponent2, distanceX; // declare variables for horizontal components of the different direction vectors & the distance between them to linearly interpolate
+        if (Math.round(position.getX()) < position.getX()) { // check if the player position is near the left of the tile
+            horizontalComponent1 = this.getVector(integerPosition.subtract(Vector2.I_UNIT)).getX(); // get horizontal component of the direction vector from the tile left of the player
+            horizontalComponent2 = integerVector.getX(); // get horizontal component of the direction vector from the tile of the player
+            distanceX = position.getX() - integerPosition.getX() + 0.5; // calculate the distance between the center of the tile left of the player and the center of the player
+        } else { // otherwise, player is on the right of the tile
+            horizontalComponent1 = integerVector.getX(); // get horizontal component of the direction vector from the tile of the player
+            horizontalComponent2 = this.getVector(integerPosition.add(Vector2.I_UNIT)).getX(); // get horizontal component of the direction vector from the tile right of the player
+            distanceX = position.getX() - integerPosition.getX() - 0.5; // calculate the distance between the center of the player and the center of the tile right of the player
         }
-        let horizontalComponent = linearInterpolation(horizontalComponent1, horizontalComponent2, distanceX);
+        let horizontalComponent = linearInterpolation(horizontalComponent1, horizontalComponent2, distanceX); // linearly interpolate between the horizontal components
 
-        let verticalComponent1, verticalComponent2, distanceY;
-        if (Math.round(position.getY()) < position.getY()) {
-            verticalComponent1 = this.getVector(integerPosition.subtract(Vector2.J_UNIT)).getY();
-            verticalComponent2 = integerVector.getY();
-            distanceY = position.getY() - integerPosition.getY() + 0.5;
-        } else {
-            verticalComponent1 = integerVector.getY();
-            verticalComponent2 = this.getVector(integerPosition.add(Vector2.J_UNIT)).getY();
-            distanceY = position.getY() - integerPosition.getY() - 0.5;
+        let verticalComponent1, verticalComponent2, distanceY; // declare variables for vertical components of the different direction vectors & the distance between them to linearly interpolate
+        if (Math.round(position.getY()) < position.getY()) { // check if the player is near the bottom of the tile
+            verticalComponent1 = this.getVector(integerPosition.subtract(Vector2.J_UNIT)).getY(); // get vertical component of the direction vector from the tile dwon from the player
+            verticalComponent2 = integerVector.getY(); // get vertical component of the direction vector from the tile of the player
+            distanceY = position.getY() - integerPosition.getY() + 0.5; // calculate the distance between the center of the tile down from the player and the center of the player
+        } else { // otherwise, player is on the top of the tile
+            verticalComponent1 = integerVector.getY(); // get vertical component of the direction vector from the tile of the player
+            verticalComponent2 = this.getVector(integerPosition.add(Vector2.J_UNIT)).getY(); // get vertical component of the direction vector from the tile up from the player
+            distanceY = position.getY() - integerPosition.getY() - 0.5; // calculate the distance between the center of the player and the center of the tile up from the player
         }
-        let verticalComponent = linearInterpolation(verticalComponent1, verticalComponent2, distanceY);
-        return new Vector2(horizontalComponent, verticalComponent).unit();
+        let verticalComponent = linearInterpolation(verticalComponent1, verticalComponent2, distanceY); // linearly interpolate between the vertical components
+        return new Vector2(horizontalComponent, verticalComponent).unit(); // return a new vector with new horizontal & vertical components (and get the unit vector)
     }
 
+    // method to switch targets
     setTarget(target) {
+        // check if the target is different from the previous target so that we don't have to generate another heatmap if the target is the same
         if (!this.target.equals(target)) {
-            this.target = target;
-            this.generateHeatMap();
+            this.target = target; // switch targets
+            this.generateHeatMap(); // generate new heatmap
         }
     }
 
+    // method to set the max distance the heatmap will generate
     setMaxDistance(maxDistance) {
-        this.maxDistance = maxDistance;
+        this.maxDistance = maxDistance; // set max distance
     }
 
+    // method to get the target of the algorithm
     getTarget() {
-        return this.target;
+        return this.target; // return the target of the algorithm
     }
 
+    // method to get the max distance the heatmap will generate
     getMaxDistance() {
-        return this.maxDistance;
+        return this.maxDistance; // return max distance
     }
 }

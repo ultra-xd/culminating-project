@@ -62,8 +62,8 @@ class Arena {
 
     // method to return if given coordinates is a wall
     isWall(coordinates) {
-        return (arrayIncludes(this.obstructions, coordinates) ||
-                coordinates.getX() < 0 || coordinates.getX() >= this.width ||
+        return (arrayIncludes(this.obstructions, coordinates) || // check if the tile is a wall
+                coordinates.getX() < 0 || coordinates.getX() >= this.width || // check if the tile is out of bounds (less than 0 or more than width/height)
                 coordinates.getY() < 0 || coordinates.getY() >= this.height
                 )
     }
@@ -142,7 +142,8 @@ class Arena {
         }
     }
 
+    // method to get the player in the arena
     getPlayer() {
-        return this.player;
+        return this.player; // return the player
     }
 }

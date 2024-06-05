@@ -9,12 +9,12 @@ class Player {
         this.controlledVelocity = Vector2.ZERO_VECTOR; // set the player velocity that the player can control to 0
         this.forcedVelocity = Vector2.ZERO_VECTOR; // set the player velocity that the player cannot control to 0
         this.direction = "down"; // set the player direction to be facing downwards
-        this.defaultSpeed = Math.E;
-        this.pathfindingAlgorithm = new PathfindingAlgorithm(new Vector2(Math.floor(this.position.getX()), Math.floor(this.position.getY())), 15, this.arena);
-        this.pathfindingAlgorithm.generateHeatMap();
-        this.pathfindingLastUpdated = 0;
-        this.animationFrame = 1;
-        this.animationTicks = 0;
+        this.defaultSpeed = Math.E; // set the speed of the player
+        this.pathfindingAlgorithm = new PathfindingAlgorithm(new Vector2(Math.floor(this.position.getX()), Math.floor(this.position.getY())), 15, this.arena); // create a pathfinding algorithm to the position of the player
+        this.pathfindingAlgorithm.generateHeatMap(); // generate the pathfinding algorithm's heatmap
+        this.pathfindingLastUpdated = 0; // integer to track when the pathfinding algorithm has last been updated
+        this.animationFrame = 1; // set the frame id of the animation to be display
+        this.animationTicks = 0; // set the tick count of the animation to track when to switch animation frames
     }
 
     // method to update the player every tick
@@ -38,19 +38,20 @@ class Player {
         let totalVelocity = this.controlledVelocity.add(this.forcedVelocity);
         this.position = this.position.add(this.controlledVelocity.add(this.forcedVelocity).divide(TPS)); // change position based on velocity
 
+        // get the angle of the velocity of the player to correctly display the sprite of the player
         let angle = this.controlledVelocity.getAngle();
-        if (angle != undefined) {
-            if (Math.PI / 4 <= angle && angle <= 3 * Math.PI / 4) {
-                this.direction = "up";
+        if (angle != undefined) { // check if the angle exists
+            if (Math.PI / 4 <= angle && angle <= 3 * Math.PI / 4) { // check if the player is looking up (45 & 135 degrees, inclusive)
+                this.direction = "up"; // set direction of player up
             }
-            else if (3 * Math.PI / 4 < angle && angle < 5 * Math.PI / 4) {
-                this.direction = "left";
+            else if (3 * Math.PI / 4 < angle && angle < 5 * Math.PI / 4) { // check if the player is looking left (135 & 225 degrees, exclusive)
+                this.direction = "left"; // set direction of player left
             }
-            else if (5 * Math.PI / 4 <= angle && angle <= 7 * Math.PI / 4) {
-                this.direction = "down";
+            else if (5 * Math.PI / 4 <= angle && angle <= 7 * Math.PI / 4) { // check if the player is looking down (225 & 315 degrees, exclusive)
+                this.direction = "down"; // set direction of player down
             }
-            else {
-                this.direction = "right";
+            else { // otherwise, player is facing right
+                this.direction = "right"; // set direction of player right
             }
         }
 
@@ -137,24 +138,25 @@ class Player {
                 break; // exit loop
             }
         }
-        this.pathfindingLastUpdated++;
-        if (this.pathfindingLastUpdated == 10) {
-            this.pathfindingLastUpdated = 0;
-            this.pathfindingAlgorithm.setTarget(new Vector2(Math.floor(this.position.getX()), Math.floor(this.position.getY())));
+
+        this.pathfindingLastUpdated++; // increase ticks since pathfinding has been updated
+        if (this.pathfindingLastUpdated >= 10) { // check if 10 ticks have passed since pathfinding has been updated
+            this.pathfindingLastUpdated = 0; // reset timer to 0
+            this.pathfindingAlgorithm.setTarget(new Vector2(Math.floor(this.position.getX()), Math.floor(this.position.getY()))); // update pathfinding by setting target to new position coordinates
         }
-        if (!this.controlledVelocity.equals(Vector2.ZERO_VECTOR)) {
-            this.animationTicks++;
-            if (this.animationTicks >= 5) {
-                this.animationTicks = 0;
-                this.animationFrame++;
+        if (!this.controlledVelocity.equals(Vector2.ZERO_VECTOR)) { // check if the player is moving
+            this.animationTicks++; // increase ticks for animation tracking
+            if (this.animationTicks >= 5) { // check if 5 ticks have passed since the animation has updated
+                this.animationTicks = 0; // reset timer to 0
+                this.animationFrame++; // increase animation frame
             }
-            if (this.animationFrame > 8) {
-                this.animationFrame = 1;
+            if (this.animationFrame > 8) { // check if the animation frame is more than 8 (there are only 8 frames)
+                this.animationFrame = 1; // reset animation frame back to 1
             }
         }
-        else {
-            this.animationTicks = 0;
-            this.animationFrame = 1;
+        else { // otherwise, player is not moving
+            this.animationTicks = 0; // set animation ticks to 0
+            this.animationFrame = 1; // set animation frame to 1 (idle animation)
         }
     }
 
@@ -189,12 +191,12 @@ class Player {
     // method to draw player
     draw(context) {
         // context.fillStyle = "black";
-        const pixelCoords = this.arena.coordsToPixels(this.position);
-        const unitLength = this.arena.getUnitLength();
+        const pixelCoords = this.arena.coordsToPixels(this.position); // get the position of the player on the screen
+        const unitLength = this.arena.getUnitLength(); // get how large 1 tile is on the display to properly size the player
         // context.fillRect(pixelCoords.getX() - (unitLength * this.size / 2), pixelCoords.getY() - (unitLength * this.size / 2), unitLength * this.size, unitLength * this.size);
 
-        let file = `files/assets/character/${this.direction}/${this.animationFrame}${this.direction}.png`;
-        let image = imageLoader[file];
-        context.drawImage(image, pixelCoords.getX() - (unitLength * this.size / 2), pixelCoords.getY() - (unitLength * this.size / 2), unitLength * this.size, unitLength * this.size);
+        let file = `files/assets/character/${this.direction}/${this.animationFrame}${this.direction}.png`; // get player file sprite
+        let image = IMAGE_LOADER[file]; // get the image associated with the file
+        context.drawImage(image, pixelCoords.getX() - (unitLength * this.size / 2), pixelCoords.getY() - (unitLength * this.size / 2), unitLength * this.size, unitLength * this.size); // draw the sprite of the player
     }
 }

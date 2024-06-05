@@ -3,27 +3,37 @@
 
 // class for enemy
 class Enemy {
+
+    // set different types of enemies
     static ZOMBIE = 0;
+    static SKELETON = 1;
+
     constructor(x, y, type, arena) {
-        this.position = new Vector2(x, y);
-        this.controlledVelocity = Vector2.ZERO_VECTOR;
-        this.forcedVelocity = Vector2.ZERO_VECTOR;
-        this.arena = arena;
-        this.type = type;
-        this.size = 0.5;
+        this.position = new Vector2(x, y); // set the position of the vectpr
+        this.controlledVelocity = Vector2.ZERO_VECTOR; // set the velocity the enemy can control itself with
+        this.forcedVelocity = Vector2.ZERO_VECTOR; // set the velocity the enemy cannot control
+        this.arena = arena; // set the arena so that collisions and player-enemy interactions can occur
+        this.type = type; // set the type of enemy (zombie, skeleton)
+        this.size = 0.5; // set the size of the enemy in tile units
+        this.speed;
+        if (this.type == Enemy.ZOMBIE) {
+            this.speed = 1;
+        } else {
+            this.speed = Math.E;
+        }
     }
 
+    // function to update the enemy
     tick() {
-        this.pathfindingAlgorithm = this.arena.getPlayer().getPathfindingAlgorithm();
-        this.controlledVelocity = this.pathfindingAlgorithm.getDecimalVector(this.position);
-        console.log(this.controlledVelocity)
-        if (this.controlledVelocity == undefined || this.controlledVelocity.isUndefined()) {
-            this.controlledVelocity = Vector2.ZERO_VECTOR;
+        this.pathfindingAlgorithm = this.arena.getPlayer().getPathfindingAlgorithm(); // get the pathfinding algorithm for the enemy
+        this.controlledVelocity = this.pathfindingAlgorithm.getDecimalVector(this.position).multiply(this.speed); // get the controlled velocity of the enemy based on pathfinding algorithm
+        if (this.controlledVelocity == undefined || this.controlledVelocity.isUndefined()) { // check if the controlled velocity is valid
+            this.controlledVelocity = Vector2.ZERO_VECTOR; // chnage to 0 vector velocity is velocity is undefined 
         }
         // console.log(this.controlledVelocity);
-        let totalVelocity = this.controlledVelocity.add(this.forcedVelocity);
-        this.position = this.position.add(totalVelocity.divide(TPS));
-
+        let totalVelocity = this.controlledVelocity.add(this.forcedVelocity); // add together the forced velocity
+        this.position = this.position.add(totalVelocity.divide(TPS)); // add velocity to position
+        // check & handle collisions
         while (true) { // keep iterating until not colliding with any walls
             let closestWalls = this.getClosestWalls(); // get all walls closest to player
             let collided = false; // create a variable to keep track of if the player is collding with a wall
@@ -109,6 +119,7 @@ class Enemy {
         // console.log(this.position)
     }
 
+    // function to get the closest walls to the enemy
     getClosestWalls() {
         let smallestDistance = undefined; // declare variable storing the smallest distance from any wall to player found so far
         let coordinates = []; // initalize array to store any coordinates of the closest walls
@@ -127,10 +138,12 @@ class Enemy {
         return coordinates; // return the list of walls closest to player
     }
 
+    // function to return a rectangle representing the hitbox of the enemy
     getHitbox() {
         return new Rectangle(this.position.getX() - this.size / 2, this.position.getY() - this.size / 2, this.size, this.size); // return a rectangle object defining the hitbox of the player
     }
 
+    // function to draw the enemy
     draw(context) {
         // console.log("drawing enemy")
         context.fillStyle = "red";
