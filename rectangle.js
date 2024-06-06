@@ -28,4 +28,13 @@ class Rectangle {
         }
         return false; // return that rectangles are not intersecting
     }
+    pointIn(point) {
+        if (
+            point.getX() >= this.x1 && point.getX() <= this.x2 &&
+            point.getY() >= this.y1 && point.getY() <= this.y2
+        ) {
+            return true;
+        }
+        return false;
+    }
 }

@@ -12,15 +12,20 @@ class Enemy {
         this.position = new Vector2(x, y); // set the position of the vectpr
         this.controlledVelocity = Vector2.ZERO_VECTOR; // set the velocity the enemy can control itself with
         this.forcedVelocity = Vector2.ZERO_VECTOR; // set the velocity the enemy cannot control
+        this.recoveryFactor = 1/30;
+        this.recoveryTicks = 0;
+        this.forcedVelocityDifference = undefined;
         this.arena = arena; // set the arena so that collisions and player-enemy interactions can occur
         this.type = type; // set the type of enemy (zombie, skeleton)
         this.size = 0.5; // set the size of the enemy in tile units
-        this.speed;
-        if (this.type == Enemy.ZOMBIE) {
-            this.speed = 1;
-        } else {
-            this.speed = Math.E;
+        this.speed; // declare the enemy speed variable
+        // zombies are slower than skeletons
+        if (this.type == Enemy.ZOMBIE) { // check if the enemy is a zombie
+            this.speed = 1; // set speed to zombie speed
+        } else { // check if the enemy is a skeleton
+            this.speed = Math.E * 2 / 3; // set speed to skeleton speed
         }
+        this.health = 100;
     }
 
     // function to update the enemy
@@ -31,6 +36,19 @@ class Enemy {
             this.controlledVelocity = Vector2.ZERO_VECTOR; // chnage to 0 vector velocity is velocity is undefined 
         }
         // console.log(this.controlledVelocity);
+        if (!this.forcedVelocity.equals(Vector2.ZERO_VECTOR)) {
+            if (this.forcedVelocityDifference == undefined) {
+                this.forcedVelocityDifference = this.forcedVelocity.multiply(-1 * this.recoveryFactor);
+                this.recoveryTicks = 0;
+            }
+            this.forcedVelocity = this.forcedVelocity.add(this.forcedVelocityDifference);
+            // console.log(this.forcedVelocityDifference);
+            this.recoveryTicks++;
+            if (this.recoveryTicks > 1 / this.recoveryFactor) {
+                this.forcedVelocity = Vector2.ZERO_VECTOR;
+                this.forcedVelocityDifference = undefined;
+            }
+        }
         let totalVelocity = this.controlledVelocity.add(this.forcedVelocity); // add together the forced velocity
         this.position = this.position.add(totalVelocity.divide(TPS)); // add velocity to position
         // check & handle collisions
@@ -138,9 +156,24 @@ class Enemy {
         return coordinates; // return the list of walls closest to player
     }
 
+    getPosition() {
+        return this.position;
+    }
     // function to return a rectangle representing the hitbox of the enemy
     getHitbox() {
         return new Rectangle(this.position.getX() - this.size / 2, this.position.getY() - this.size / 2, this.size, this.size); // return a rectangle object defining the hitbox of the player
+    }
+
+    getHealth() {
+        return this.health;
+    }
+
+    decreaseHealth(damage) {
+        this.health -= damage;
+    }
+
+    setForcedVelocity(velocity) {
+        this.forcedVelocity = velocity;
     }
 
     // function to draw the enemy
@@ -150,5 +183,12 @@ class Enemy {
         const pixelCoords = this.arena.coordsToPixels(this.position);
         const unitLength = this.arena.getUnitLength();
         context.fillRect(pixelCoords.getX() - (unitLength * this.size / 2), pixelCoords.getY() - (unitLength * this.size / 2), unitLength * this.size, unitLength * this.size);
+
+        // draw health bar
+        context.fillStyle = "red";
+        context.fillRect(pixelCoords.getX() - unitLength * 2 / 3, pixelCoords.getY() - unitLength * 2 / 3, unitLength * 4 / 3, unitLength / 20);
+        
+        context.fillStyle = "green";
+        context.fillRect(pixelCoords.getX() - unitLength * 2 / 3., pixelCoords.getY() - unitLength * 2 / 3, unitLength * 4 * (this.health / 100) / 3, unitLength / 20);
     }
 }

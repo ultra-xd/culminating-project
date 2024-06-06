@@ -117,6 +117,10 @@ class Vector2 {
         return new Vector2(Math.cos(angle) * magnitude, Math.sin(angle) * magnitude); // return the vector with x & y components based on magnitude & direction (x = cosa * magnitude, y = sina * magnitude)
     }
 
+    floor() {
+        return new Vector2(Math.floor(this.x), Math.floor(this.y));
+    }
+
     // method to return a string representation of the vector
     toString() {
         return `(${this.x}, ${this.y})`;

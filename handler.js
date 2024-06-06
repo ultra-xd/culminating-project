@@ -5,7 +5,6 @@ class Handler {
     constructor(canvas) {
         this.canvas = canvas; // store canvas
         this.arena = new Arena(); // create a new arena
-
     }
 
     // method to draw everything in canvas
@@ -18,7 +17,7 @@ class Handler {
     }
 
     // method to update everything in the game
-    tick(keysPressed) {
-        this.arena.tick(keysPressed); // update the arena
+    tick(buttonsPressed) {
+        this.arena.tick(buttonsPressed); // update the arena
     }
 }

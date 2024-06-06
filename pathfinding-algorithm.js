@@ -22,7 +22,8 @@ class PathfindingAlgorithm {
         new Vector2(1, -1)
     ];
     constructor(target, maxDistance, arena) {
-        this.target = target; // set target (x & y must be integer values)
+        this.target = target;
+        this.roundedTarget = new Vector2(Math.floor(this.target.getX()), Math.floor(this.target.getY())); // set target (x & y must be integer values)
         this.maxDistance = maxDistance; // find a distance value to stop generating the heatmap at
         this.arena = arena; // get the arena to determine which node is a wall
         this.heatmap = {}; // create a dictionary to store all distance values
@@ -42,16 +43,16 @@ class PathfindingAlgorithm {
         this.heatmap = {}; // clear heatmap
 
         // create variables to determine which node should be investigated
-        let currentX = this.target.getX();
-        let currentY = this.target.getY();
+        let currentX = this.roundedTarget.getX();
+        let currentY = this.roundedTarget.getY();
 
         // create distance variable & set to 0
         let distance = 0;
 
         // create array of nodes to be checked
         let unvisitedNodes = [];
-        this.heatmap[this.target.toString()] = distance; // add ending node to array of unvisited nodes and to heatmap
-        arrayPush(unvisitedNodes, this.target);
+        this.heatmap[this.roundedTarget.toString()] = distance; // add ending node to array of unvisited nodes and to heatmap
+        arrayPush(unvisitedNodes, this.roundedTarget);
 
         // repeat while there is still nodes to check
         while (unvisitedNodes.length != 0) {
@@ -79,11 +80,11 @@ class PathfindingAlgorithm {
             // check if the list of unvisited nodes is empty
             if (unvisitedNodes.length != 0) {
                 // if not,
-                arrayDelete(unvisitedNodes, 0); // delete the old node
                 let newNode = unvisitedNodes[0]; // change to a new node that needs to be checked
                 distance = this.heatmap[newNode]; // get the new distance
                 currentX = newNode.getX(); // get new coordinates of node
                 currentY = newNode.getY();
+                arrayDelete(unvisitedNodes, 0); // delete the old node
             }
         }
     }
@@ -118,6 +119,11 @@ class PathfindingAlgorithm {
         /*
         uses linear interpolation to interpolate direction based on 3 different vectors generated near the player
         */
+        let differenceVector = this.target.subtract(position);
+        if (differenceVector.getMagnitude() < 1) {
+            return differenceVector.unit();
+        }
+
         let integerPosition = new Vector2(Math.floor(position.getX()), Math.floor(position.getY())) // get the integer coordinates of vector
         let integerVector = this.getVector(integerPosition); // get the direction vector based on integer coordiantes
 
@@ -150,8 +156,9 @@ class PathfindingAlgorithm {
     // method to switch targets
     setTarget(target) {
         // check if the target is different from the previous target so that we don't have to generate another heatmap if the target is the same
-        if (!this.target.equals(target)) {
-            this.target = target; // switch targets
+        if (!this.roundedTarget.equals(target)) {
+            this.target = target;
+            this.roundedTarget = new Vector2(Math.floor(this.target.getX()), Math.floor(this.target.getY())); 
             this.generateHeatMap(); // generate new heatmap
         }
     }
