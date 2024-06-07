@@ -8,9 +8,10 @@ class Player {
         this.size = 0.75; // store the size of the player in tile units (will be a square)
         this.controlledVelocity = Vector2.ZERO_VECTOR; // set the player velocity that the player can control to 0
         this.forcedVelocity = Vector2.ZERO_VECTOR; // set the player velocity that the player cannot control to 0
+        this.forcedVelocityDifference = undefined;
         this.direction = "down"; // set the player direction to be facing downwards
         this.defaultSpeed = Math.E; // set the speed of the player
-        this.pathfindingAlgorithm = new PathfindingAlgorithm(new Vector2(Math.floor(this.position.getX()), Math.floor(this.position.getY())), 15, this.arena); // create a pathfinding algorithm to the position of the player
+        this.pathfindingAlgorithm = new PathfindingAlgorithm(new Vector2(Math.floor(this.position.getX()), Math.floor(this.position.getY())), 20, this.arena); // create a pathfinding algorithm to the position of the player
         this.pathfindingAlgorithm.generateHeatMap(); // generate the pathfinding algorithm's heatmap
         this.pathfindingLastUpdated = 0; // integer to track when the pathfinding algorithm has last been updated
         this.animationFrame = 1; // set the frame id of the animation to be display
@@ -25,6 +26,7 @@ class Player {
         this.attackingForce = 15;
         this.reach = 2;
         this.health = 100;
+        this.recoveryFactor = 1/20;
     }
 
     // method to update the player every tick
@@ -49,8 +51,20 @@ class Player {
                 }
                 else if (button == "RMB1") {
                     this.isAOEAttacking = true;
-                    console.log("rightclick")
                 }
+            }
+        }
+        if (!this.forcedVelocity.equals(Vector2.ZERO_VECTOR)) {
+            if (this.forcedVelocityDifference == undefined) {
+                this.forcedVelocityDifference = this.forcedVelocity.multiply(-1 * this.recoveryFactor);
+                this.recoveryTicks = 0;
+            }
+            this.forcedVelocity = this.forcedVelocity.add(this.forcedVelocityDifference);
+            // console.log(this.forcedVelocityDifference);
+            this.recoveryTicks++;
+            if (this.recoveryTicks > 1 / this.recoveryFactor) {
+                this.forcedVelocity = Vector2.ZERO_VECTOR;
+                this.forcedVelocityDifference = undefined;
             }
         }
         this.controlledVelocity = (!this.controlledVelocity.equals(Vector2.ZERO_VECTOR)) ? this.controlledVelocity.unit().multiply(this.defaultSpeed): Vector2.ZERO_VECTOR; // set controllable velocity to have magnitude of 1 if it is not 0
@@ -203,7 +217,6 @@ class Player {
                 }
             }
             this.attackingAnimationFrame = Math.floor(this.heavyAttackTicks / this.animationSpeed) + 1;
-            console.log(this.attackingAnimationFrame);
             if (this.attackingAnimationFrame > 8) {
                 this.isHeavyAttacking = false;
                 this.heavyAttackTicks = 0;
@@ -226,6 +239,7 @@ class Player {
                 this.animationFrame = 1; // set animation frame to 1 (idle animation)
             }
         }
+        // console.log(this.health)
     }
     attackEnemy(enemy, damage) {
         let enemyPosition = enemy.getPosition();
@@ -277,6 +291,8 @@ class Player {
         let file;
         if (this.isHeavyAttacking) {
             file = `files/assets/character/${this.direction}/${this.attackingAnimationFrame}${this.direction}attack.png`; // get player file sprite
+        } else if (this.isAOEAttacking) {
+            file = `files/assets/character/sweeping/${this.attackingAnimationFrame}sweepingattack.png`;
         } else {
             file = `files/assets/character/${this.direction}/${this.animationFrame}${this.direction}.png`; // get player file sprite
         }
@@ -294,6 +310,19 @@ class Player {
         context.fillRect(unitLength / 2, unitLength / 2, unitLength * 5, unitLength / 10);
         
         context.fillStyle = "green";
-        context.fillRect(unitLength / 2, unitLength / 2, unitLength * 5 / (this.health / 100), unitLength / 10);
+        context.fillRect(unitLength / 2, unitLength / 2, unitLength * 5 * (this.health / 100), unitLength / 10);
+    }
+
+    getPosition() {
+        return this.position;
+    }
+
+    setForcedVelocity(velocity) {
+        this.forcedVelocity = velocity;
+        this.forcedVelocityDifference = undefined;
+    }
+    
+    decreaseHealth(damage) {
+        this.health -= damage;
     }
 }

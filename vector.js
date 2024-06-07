@@ -94,7 +94,7 @@ class Vector2 {
 
     // method to return a unit vector in the same direction
     unit() {
-        return this.divide(this.getMagnitude()); // return the unit vector (formula of unit vector: vector b / magnitude of b)
+        return (this.getMagnitude != 0) ? this.divide(this.getMagnitude()): Vector2.J_UNIT; // return the unit vector (formula of unit vector: vector b / magnitude of b)
     }
 
     // method to return the dot product of two vectors

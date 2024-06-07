@@ -14,6 +14,7 @@ class Arena {
             new Enemy(1, 7, Enemy.ZOMBIE, this),
             new Enemy(3, 14, Enemy.SKELETON, this)
         ]; // create array of enemies
+        this.projectiles = [];
         this.width = 15; // set # of tiles horizontally on map
         this.height = 10; // set # of tiles vertically on map
         this.player = new Player(1, 1, this); // create a new player
@@ -44,9 +45,20 @@ class Arena {
                 arrayDelete(this.enemies, i);
             }
         }
+
+        for (let i = 0; i < this.projectiles.length; i++) {
+            let projectile = this.projectiles[i];
+            if (projectile.getIfCollidedWithPlayer() || projectile.getDespawnTimer() > projectile.getDespawnLimit()) {
+                arrayDelete(this.projectiles, i);
+            }
+        }
         for (let enemy of this.enemies) { // iterate through all enemies in the arena
             enemy.tick(); // tick all enemies
         }
+        for (let projectile of this.projectiles) {
+            projectile.tick();
+        }
+        // console.log(this.projectiles);
         let mousePosition = canvas.getMousePosition();
         if (mousePosition != undefined) {
             let coordsMousePosition = this.pixelsToCoords(mousePosition);
@@ -112,9 +124,12 @@ class Arena {
         return (arrayIncludes(this.obstructions, coordinates) || // check if the tile is a wall
                 coordinates.getX() < 0 || coordinates.getX() >= this.width || // check if the tile is out of bounds (less than 0 or more than width/height)
                 coordinates.getY() < 0 || coordinates.getY() >= this.height
-                )
+                );
     }
 
+    launchArrow(coordinates, velocity) {
+        arrayPush(this.projectiles, new Arrow(coordinates, velocity, this));
+    }
     // method to return # of pixels in 1 tile
     getUnitLength() {
         const canvasWidth = canvas.getWidth(); // get width of canvas in pixels
@@ -199,11 +214,9 @@ class Arena {
         for (let enemy of this.enemies) { // iterate through all enemies
             enemy.draw(context); // draw all enemies
         }
-        
-    }
-
-    inflictDamage(point, radius) {
-
+        for (let projectile of this.projectiles) {
+            projectile.draw(context);
+        }
     }
 
     // method to get the player in the arena
