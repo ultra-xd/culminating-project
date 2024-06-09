@@ -6,7 +6,7 @@ class Tower {
         this.position = new Vector2(x, y);
         this.arena = arena;
         this.ticksSinceShot = 0;
-        this.ticksPerPeriod = 120;
+        this.ticksPerPeriod = randomInteger(90, 150);
         this.width = 1;
         this.height = 2;
     }
@@ -15,6 +15,7 @@ class Tower {
         this.ticksSinceShot++;
         if (this.ticksSinceShot > this.ticksPerPeriod) {
             this.ticksSinceShot = 0;
+            this.ticksPerPeriod = randomInteger(180, 420);
             let number = randomInteger(1, 5);
             if (number <= 2) {
                 this.shootFireball();
@@ -95,14 +96,21 @@ class Fireball {
     }
 
     draw(context) {
-        const pixelCoords = this.arena.coordsToPixels(this.position); // get the position of the player on the screen
+        const positionPixelCoords = this.arena.coordsToPixels(this.position); // get the position of the player on the screen
+        const finalPositionPixelCoords = this.arena.coordsToPixels(this.finalPosition); // get the final position of the fireball on the screen
         // console.log(pixelCoords);
         const unitLength = this.arena.getUnitLength(); // get how large 1 tile is on the display to properly size the player
 
         context.fillStyle = "blue";
 
         context.beginPath();
-        context.arc(pixelCoords.getX(), pixelCoords.getY(), this.radius * unitLength, 0, 2 * Math.PI);
+        context.arc(positionPixelCoords.getX(), positionPixelCoords.getY(), this.radius * unitLength, 0, 2 * Math.PI);
+        context.fill();
+
+        context.fillStyle = "rgba(255, 0, 0, 0.5)";
+
+        context.beginPath();
+        context.arc(finalPositionPixelCoords.getX(), finalPositionPixelCoords.getY(), this.radius * unitLength, 0, 2 * Math.PI);
         context.fill();
     }
     getIfExploded() {

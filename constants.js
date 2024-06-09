@@ -83,6 +83,13 @@ const ARENAS = {
             new Vector2(1, 7),
             new Vector2(13, 7)
         ],
+        "enemySpawners": [
+            new Vector2(7, 4),
+            new Vector2(8, 5)
+        ],
+        "spawnedEnemies": [
+            new Vector2(7, 7)
+        ],
         "playerStartPosition": new Vector2(1, 1)
     }
 };

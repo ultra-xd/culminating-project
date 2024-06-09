@@ -45,8 +45,7 @@ function verifyUsername(username) {
         "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"
     ];
     for (let i = 0; i < username.length; i++) {
-        if (!arrayIncludes(allowedLowercaseLetters, username.charAt(i)) && 
-            !arrayIncludes(allowedLowercaseLetters, username.charAt(i).toUpperCase())) {
+        if (!arrayIncludes(allowedLowercaseLetters, username.charAt(i).toLowerCase())) {
             alert("Special characters are not allowed (only letters, numbers, underscore & period allowed)");
             return false;
         }

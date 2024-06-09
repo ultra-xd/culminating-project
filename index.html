@@ -9,7 +9,7 @@
         <div id="menu">
             <h1> Aaron's Funny Fighting Game </h1>
 
-            <input type="text" id="username-input"> <br>
+            <input type="text" id="username-input" placeholder="Username"> <br>
             <button type="button" onclick="startGame();"> Play! </button>
 
             <div id="instructions">
@@ -20,7 +20,7 @@
 
         <div id="death-menu" hidden>
             <h1> You Died! </h1>
-            <button type="button" onclick="returnToMenu();"> Return </button>
+            <button type="button" onclick="returnToMenu();"> Try Again </button>
         </div>
 
         <canvas id="canvas" tabindex="1" hidden></canvas>
@@ -32,6 +32,7 @@
         <script src="pathfinding-algorithm.js"></script> 
         <script src="player.js"></script>
         <script src="enemy.js"></script>
+        <script src="enemy-spawner.js"></script>
         <script src="tower.js"></script>
         <script src="arena.js"></script>
         <script src="handler.js"></script>
