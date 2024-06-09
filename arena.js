@@ -5,7 +5,6 @@ class Arena {
     constructor() {
         this.arenaType = 1; // determine the map layout using ID
         this.obstructions = []; // create array of coordinates for walls on map
-        this.generateArena(); // generate map layout
         this.enemies = [
             new Enemy(4, 4, Enemy.SKELETON, this),
             new Enemy(5, 5, Enemy.ZOMBIE, this),
@@ -14,17 +13,26 @@ class Arena {
             new Enemy(1, 7, Enemy.ZOMBIE, this),
             new Enemy(3, 14, Enemy.SKELETON, this)
         ]; // create array of enemies
-        this.projectiles = [];
+        this.arrows = [];
+        this.towers = [];
+        this.generateArena(); // generate map layout
+        this.fireballs = [];
         this.width = 15; // set # of tiles horizontally on map
         this.height = 10; // set # of tiles vertically on map
         this.player = new Player(1, 1, this); // create a new player
         this.currentMousePosition = undefined;
+        this.deathDelayTicks = 0;
+        this.deathDelayLimit = 120;
     }
 
     // method to generate arena layout
     generateArena() {
+        this.towers = [];
         if (arrayIncludes(Object.keys(ARENAS), this.arenaType)) { // check if there is an arena with stored ID
-            this.obstructions = ARENAS[this.arenaType]; // get array of walls on the arena
+            this.obstructions = ARENAS[this.arenaType]["walls"]; // get array of walls on the arena
+            for (let tower of ARENAS[this.arenaType]["towers"]) {
+                arrayPush(this.towers, new Tower(tower.getX(), tower.getY(), this));
+            }
         } else {
             this.obstructions = []; // generate no walls if ID is not valid
         }
@@ -38,28 +46,47 @@ class Arena {
 
     // method to update the arena every tick
     tick(buttonsPressed) {
-        this.player.tick(buttonsPressed); // update the player every tick
-        for (let i = 0; i < this.enemies.length; i++) {
-            let enemy = this.enemies[i];
-            if (enemy.getHealth() <= 0) {
-                arrayDelete(this.enemies, i);
+        if (this.player.getIfAlive()) {
+            this.player.tick(buttonsPressed); // update the player every tick
+            for (let enemy of this.enemies) { // iterate through all enemies in the arena
+                enemy.tick(); // tick all enemies
             }
-        }
+            for (let arrow of this.arrows) {
+                arrow.tick();
+            }
+            for (let tower of this.towers) {
+                tower.tick();
+            }
+            for (let fireball of this.fireballs) {
+                fireball.tick();
+            }
+            for (let i = 0; i < this.enemies.length; i++) {
+                let enemy = this.enemies[i];
+                if (enemy.getHealth() <= 0) {
+                    arrayDelete(this.enemies, i);
+                }
+            }
 
-        for (let i = 0; i < this.projectiles.length; i++) {
-            let projectile = this.projectiles[i];
-            if (projectile.getIfCollidedWithPlayer() || projectile.getDespawnTimer() > projectile.getDespawnLimit()) {
-                arrayDelete(this.projectiles, i);
+            for (let i = 0; i < this.arrows.length; i++) {
+                let arrow = this.arrows[i];
+                if (arrow.getIfCollidedWithPlayer() || arrow.getDespawnTimer() > arrow.getDespawnLimit()) {
+                    arrayDelete(this.arrows, i);
+                }
             }
-        }
-        for (let enemy of this.enemies) { // iterate through all enemies in the arena
-            enemy.tick(); // tick all enemies
-        }
-        for (let projectile of this.projectiles) {
-            projectile.tick();
+            for (let i = 0; i < this.fireballs.length; i++) {
+                let fireball = this.fireballs[i];
+                if (fireball.getIfExploded()) {
+                    arrayDelete(this.fireballs, i);
+                }
+            }
+        } else {
+            this.deathDelayTicks++;
+            if (this.deathDelayTicks > this.deathDelayLimit) {
+                endGame();
+            }
         }
         // console.log(this.projectiles);
-        let mousePosition = canvas.getMousePosition();
+        let mousePosition = game.getCanvas().getMousePosition();
         if (mousePosition != undefined) {
             let coordsMousePosition = this.pixelsToCoords(mousePosition);
             if (coordsMousePosition.getX() >= 0 && coordsMousePosition.getX() < this.width &&
@@ -71,8 +98,8 @@ class Arena {
 
     // method to convert coordinates to pixels on canvas
     coordsToPixels(coords) {
-        const canvasWidth = canvas.getWidth(); // get width of canvas in pixels
-        const canvasHeight = canvas.getHeight(); // get height of canvas in pixels
+        const canvasWidth = game.getCanvas().getWidth(); // get width of canvas in pixels
+        const canvasHeight = game.getCanvas().getHeight(); // get height of canvas in pixels
 
         const canvasPixelsRatio = canvasWidth / canvasHeight; // get the ratio between the width & height of the canvas
         const arenaRatio = this.width / this.height; // get the ratio between the width & height of the arena
@@ -96,8 +123,8 @@ class Arena {
 
     // method to convert pixels on canvas to coordinates
     pixelsToCoords(pixelPosition) {
-        const canvasWidth = canvas.getWidth(); // get width of canvas in pixels
-        const canvasHeight = canvas.getHeight(); // get height of canvas in pixels
+        const canvasWidth = game.getCanvas().getWidth(); // get width of canvas in pixels
+        const canvasHeight = game.getCanvas().getHeight(); // get height of canvas in pixels
 
         const canvasPixelsRatio = canvasWidth / canvasHeight; // get the ratio between the width & height of the canvas
         const arenaRatio = this.width / this.height; // get the ratio between the width & height of the arena
@@ -128,12 +155,17 @@ class Arena {
     }
 
     launchArrow(coordinates, velocity) {
-        arrayPush(this.projectiles, new Arrow(coordinates, velocity, this));
+        arrayPush(this.arrows, new Arrow(coordinates, velocity, this));
     }
+
+    launchFireball(fireball) {
+        arrayPush(this.fireballs, fireball);
+    }
+
     // method to return # of pixels in 1 tile
     getUnitLength() {
-        const canvasWidth = canvas.getWidth(); // get width of canvas in pixels
-        const canvasHeight = canvas.getHeight(); // get height of canvas in pixels
+        const canvasWidth = game.getCanvas().getWidth(); // get width of canvas in pixels
+        const canvasHeight = game.getCanvas().getHeight(); // get height of canvas in pixels
 
         const canvasPixelsRatio = canvasWidth / canvasHeight; // get the ratio between the width & height of the canvas
         const arenaRatio = this.width / this.height; // get the ratio between the width & height of the arena
@@ -148,8 +180,8 @@ class Arena {
 
     // function to draw arena on canvas
     draw(context) {
-        const canvasWidth = canvas.getWidth(); // get width of canvas in pixels
-        const canvasHeight = canvas.getHeight(); // get height of canvas in pixels
+        const canvasWidth = game.getCanvas().getWidth(); // get width of canvas in pixels
+        const canvasHeight = game.getCanvas().getHeight(); // get height of canvas in pixels
 
         const canvasPixelsRatio = canvasWidth / canvasHeight; // get the ratio between the width & height of the canvas
         const arenaRatio = this.width / this.height; // get the ratio between the width & height of the arena
@@ -209,13 +241,21 @@ class Arena {
             context.stroke();
         }
 
-        this.player.draw(context); // draw the player
+        if (this.player.getIfAlive()) {  
+            this.player.draw(context); // draw the player
+        }
 
         for (let enemy of this.enemies) { // iterate through all enemies
             enemy.draw(context); // draw all enemies
         }
-        for (let projectile of this.projectiles) {
-            projectile.draw(context);
+        for (let arrow of this.arrows) {
+            arrow.draw(context);
+        }
+        for (let tower of this.towers) {
+            tower.draw(context);
+        }
+        for (let fireball of this.fireballs) {
+            fireball.draw(context);
         }
     }
 

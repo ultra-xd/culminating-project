@@ -219,6 +219,7 @@ class Enemy {
 
     setForcedVelocity(velocity) {
         this.forcedVelocity = velocity;
+        this.forcedVelocityDifference = undefined;
     }
 
     // function to draw the enemy

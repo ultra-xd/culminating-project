@@ -8,8 +8,62 @@ body {
     margin: auto;
     overflow-x: hidden;
     overflow-y: hidden;
+    background-color: rgb(20, 24, 31);
+    color: white;
+    font-family: Consolas;
 }
 
 canvas {
     margin: auto;
+}
+
+#menu {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    margin: auto;
+}
+
+#instructions {
+    padding: 20%;
+    width: 50%;
+    margin: auto;
+}
+
+h1 {
+    padding-top: 5%;
+}
+
+button {
+    background-color: rgb(25, 25, 80);
+    color: white;
+    font-family: Consolas;
+    border: 3px solid white;
+    border-radius: 5px;
+    margin: 5px;
+    transition: 0.5s;
+}
+
+button:hover {
+    border-color:darkslateblue;
+}
+
+button:active {
+    border-color:white;
+    color: black;
+}
+
+button:disabled {
+    background-color: black;
+    color: rgb(100, 100, 100);
+    border-color: rgb(100, 100, 100);
+}
+
+input {
+    background-color: rgb(25, 25, 80);
+    color: white;
+    font-family: Consolas;
+    border: 3px solid white;
+    border-radius: 5px;
+    margin: 5px;
 }

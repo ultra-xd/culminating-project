@@ -9,15 +9,16 @@ class Canvas {
         this.attachKeybinds(); // create event listeners for keybinds
         this.handler = new Handler(this); // create a new handler to handle all objects in the game
         this.mousePosition = undefined;
+        this.loop;
     }
 
     // method to attach keybinds to window
     attachKeybinds() {
-        document.addEventListener("contextmenu", (event) => {
+        document.body.addEventListener("contextmenu", (event) => {
             event.preventDefault();
         });
         // create new event listener to track when a key is being pressed down5
-        document.addEventListener("keydown", (event) => {
+        document.body.addEventListener("keydown", (event) => {
             if (event.defaultPrevented) { // check if event has already been processed
                 return; // exit if event has already been processed
             }
@@ -29,7 +30,7 @@ class Canvas {
         });
 
         // create new event listener to track when a key is being released
-        document.addEventListener("keyup", (event) => {
+        document.body.addEventListener("keyup", (event) => {
             if (event.defaultPrevented) { // check if event has already been processed
                 return; // exit if event has already been processed
             }
@@ -40,7 +41,7 @@ class Canvas {
             event.preventDefault(); // register that event is processed
         });
         // create new event listener to track when the mouse is being pressed
-        document.addEventListener("mousedown", (event) => {
+        document.body.addEventListener("mousedown", (event) => {
             if (event.defaultPrevented) { // check if event has already been processed
                 return; // exit if event has already been processed
             }
@@ -53,7 +54,7 @@ class Canvas {
             event.preventDefault(); // register that event is processed
         });
         // create new event listener to track when the mouse is being released
-        document.addEventListener("mouseup", (event) => {
+        document.body.addEventListener("mouseup", (event) => {
             if (event.defaultPrevented) { // check if event has already been processed
                 return; // exit if event has already been processed
             }
@@ -66,7 +67,7 @@ class Canvas {
             event.preventDefault(); // register that event is processed
         });
 
-        document.addEventListener("mousemove", (event) => {
+        document.body.addEventListener("mousemove", (event) => {
             if (event.defaultPrevented) { // check if event has already been processed
                 return; // exit if event has already been processed
             }
@@ -78,9 +79,18 @@ class Canvas {
         });
     }
 
+    detachKeybinds() {
+        document.body.replaceWith(document.body.cloneNode(true));
+    }
+
     // method to start a game loop
     start() {
-        setInterval(() => { this.mainloop(); }, 1000 / TPS); // create an interval loop for every frame that runs the mainloop function every tick
+        this.loop = setInterval(() => { this.mainloop(); }, 1000 / TPS); // create an interval loop for every frame that runs the mainloop function every tick
+    }
+
+    end() {
+        clearInterval(this.loop);
+        this.detachKeybinds();
     }
 
     // method to update the game every tick
@@ -102,7 +112,7 @@ class Canvas {
             arrayDelete(this.buttonsPressed, arrayIndexOf(this.buttonsPressed, "RMB2"));
         }
 
-        let boundingRectangle = this.HTMLElement.getBoundingClientRect();
+        // let boundingRectangle = this.HTMLElement.getBoundingClientRect();
         // const mouseX = event
 
         this.handler.draw(); // draw the game display

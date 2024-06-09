@@ -2,10 +2,28 @@
 
 <html>
     <head>
+        <title> HUGE fighting game :) </title>
         <link rel="stylesheet" href="style.css">
     </head>
     <body onload="main();">
-        <canvas id="canvas"></canvas>
+        <div id="menu">
+            <h1> Aaron's Funny Fighting Game </h1>
+
+            <input type="text" id="username-input"> <br>
+            <button type="button" onclick="startGame();"> Play! </button>
+
+            <div id="instructions">
+                <h3> How to Play: </h3>
+                <p> Press the WASD keys to move your character. Press left-click on an enemy to swing your sword at an enemy. Press right-click to create a sweeping attack around you that damages all enemies around you. Zombies slowly chase you around relentlessly, while skeletons are fast and shoot you with their arrows. Fireball towers will launch fireballs at you. Survive as long as you can! </p>
+            </div>
+        </div>
+
+        <div id="death-menu" hidden>
+            <h1> You Died! </h1>
+            <button type="button" onclick="returnToMenu();"> Return </button>
+        </div>
+
+        <canvas id="canvas" tabindex="1" hidden></canvas>
         <script src="functions.js"></script>
         <script src="array-functions.js"></script>
         <script src="vector.js"></script>
@@ -14,9 +32,11 @@
         <script src="pathfinding-algorithm.js"></script> 
         <script src="player.js"></script>
         <script src="enemy.js"></script>
+        <script src="tower.js"></script>
         <script src="arena.js"></script>
         <script src="handler.js"></script>
         <script src="canvas.js"></script>
+        <script src="game.js"></script>
         <script src="main.js"></script>
     </body>
 </html>
