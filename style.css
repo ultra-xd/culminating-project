@@ -15,6 +15,7 @@ body {
 
 canvas {
     margin: auto;
+    image-rendering: pixelated;
 }
 
 #menu {

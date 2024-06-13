@@ -10,6 +10,7 @@ class Handler {
     // method to draw everything in canvas
     draw() {
         const context = this.canvas.getContext(); // get the canvas drawing context
+        context.imageSmoothingEnabled = false;
         context.clearRect(0, 0, this.canvas.getWidth(), this.canvas.getHeight()); // clear the canvas
         context.fillStyle = "black"; // change context fill style to black
         context.fillRect(0, 0, this.canvas.getWidth(), this.canvas.getHeight()); // fill a black rectangle on canvas

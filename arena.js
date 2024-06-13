@@ -2,8 +2,12 @@
 
 // class for arena where obstacles, enemies & player is stored
 class Arena {
+    static GRASS_TEXTURE = IMAGE_LOADER["files/assets/textures/non-animated/grass.png"];
+    static STONE_TEXTURE = IMAGE_LOADER["files/assets/textures/non-animated/stone.png"];
+    static BACKGROUND_IMAGE = IMAGE_LOADER["files/assets/textures/non-animated/background.png"]
     constructor() {
-        this.arenaType = 1; // determine the map layout using ID
+        this.arenaType = randomChoice(Object.keys(ARENAS)); // determine the map layout using ID
+        // this.arenaType = 2;
         this.obstructions = []; // create array of coordinates for walls on map
         this.enemies = [
             // new Enemy(4, 4, Enemy.SKELETON, this),
@@ -61,6 +65,7 @@ class Arena {
         } else {
             this.deathDelayTicks++;
             if (this.deathDelayTicks > this.deathDelayLimit) {
+                console.log("E")
                 endGame();
             }
         }
@@ -161,10 +166,27 @@ class Arena {
 
     // method to return if given coordinates is a wall
     isWall(coordinates) {
-        return (arrayIncludes(this.obstructions, coordinates) || // check if the tile is a wall
+        return (arrayIncludes(this.obstructions, coordinates) || this.isTower(coordinates) || // check if the tile is a wall or tower
                 coordinates.getX() < 0 || coordinates.getX() >= this.width || // check if the tile is out of bounds (less than 0 or more than width/height)
                 coordinates.getY() < 0 || coordinates.getY() >= this.height
                 );
+    }
+
+    isTower(coordinates) {
+        for (let tower of this.towers) {
+            if (coordinates.equals(tower.getPosition())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    getTowers() {
+        let towers = [];
+        for (let tower of this.towers) {
+            arrayPush(towers, tower.getPosition());
+        }
+        return towers;
     }
 
     launchArrow(coordinates, velocity) {
@@ -217,26 +239,39 @@ class Arena {
             pixelsPerTile = canvasWidth / this.width; // adjust the tile size so that the arena fits on the canvas horizontally
             pixelsYOffset = (canvasHeight - (pixelsPerTile * this.height)) / 2;  // change y offset so that display is center of screen
         }
+
+        const backgroundAspectRatio = 1920 / 1548;
+        let backgroundWidth, backgroundHeight;
+        if (canvasPixelsRatio >= canvasPixelsRatio) {
+            backgroundWidth = canvasWidth;
+            backgroundHeight = backgroundWidth / backgroundAspectRatio;
+        } else {
+            backgroundHeight = canvasHeight;
+            backgroundWidth = backgroundHeight * backgroundAspectRatio;
+        }
+
+        context.drawImage(Arena.BACKGROUND_IMAGE, canvasWidth / 2 - backgroundWidth / 2, canvasHeight / 2 - backgroundHeight / 2, backgroundWidth, backgroundHeight);
+        
         // console.log(pixelsPerTile);
         // console.log(`${pixelsPerTile * this.width} x ${pixelsPerTile * this.height}`);
         // console.log(`${canvasWidth} x ${canvasHeight}`);
+
         for (let x = 0; x < this.width; x++) { // iterate through each x-coordinate tile
             for (let y = 0; y < this.height; y++) { // iterate each y-coordinate tile
                 if (arrayIncludes(this.obstructions, new Vector2(x, y))) { // check if the x and y coordinates contain an obstruction
-                    context.fillStyle = "rgb(50, 50, 50)"; // set a darker grey colour if there is an obstruction
+                    // context.fillStyle = "rgb(50, 50, 50)"; // set a darker grey colour if there is an obstruction
+                    context.drawImage(Arena.STONE_TEXTURE, x * pixelsPerTile + pixelsXOffset, canvasHeight - ((y + 1) * pixelsPerTile + pixelsYOffset), pixelsPerTile, pixelsPerTile);
                 }
                 else {
-                    context.fillStyle = "rgb(128, 128, 128)"; // set a lighter grey colour if there is an obstruction
+                    context.drawImage(Arena.GRASS_TEXTURE, x * pixelsPerTile + pixelsXOffset, canvasHeight - ((y + 1) * pixelsPerTile + pixelsYOffset), pixelsPerTile, pixelsPerTile);
                 }
-                context.fillRect(x * pixelsPerTile + pixelsXOffset, canvasHeight - ((y + 1) * pixelsPerTile + pixelsYOffset), pixelsPerTile, pixelsPerTile); // fill in a rectangle at the tile
+                // context.fillRect(x * pixelsPerTile + pixelsXOffset, canvasHeight - ((y + 1) * pixelsPerTile + pixelsYOffset), pixelsPerTile, pixelsPerTile); // fill in a rectangle at the tile
             }
         }
         // start drawing grid pattern over tiles
         context.beginPath(); // start path of context
         context.lineWidth = "3"; // customize width of lines to 3 pixels
-        context.strokeStyle = "white"; // customize lines to be white
-        context.fillStyle = "black";
-        context.font = "60px Consolas";
+        context.strokeStyle = "black"; // customize lines to be white
         for (let x = 0; x < this.width; x++) { // iterate through all x coordinates
             for (let y = 0; y < this.height; y++) { // iterate through all y coordinates
                 context.rect(x * pixelsPerTile + pixelsXOffset, canvasHeight - ((y + 1) * pixelsPerTile + pixelsYOffset), pixelsPerTile, pixelsPerTile); // draw a white border around each tile
@@ -252,8 +287,8 @@ class Arena {
             context.beginPath();
 
             let highlightedSquare = this.currentMousePosition.floor();
-            context.strokeStyle = "black";
-            context.lineWidth = "3px";
+            context.strokeStyle = "white";
+            context.lineWidth = "3";
             context.rect(highlightedSquare.getX() * pixelsPerTile + pixelsXOffset, canvasHeight - ((highlightedSquare.getY() + 1) * pixelsPerTile + pixelsYOffset), pixelsPerTile, pixelsPerTile);
             
             context.stroke();
@@ -276,6 +311,17 @@ class Arena {
         for (let fireball of this.fireballs) {
             fireball.draw(context);
         }
+
+        // context.fillStyle = "black";
+        // context.font = "60px Consolas";
+        // for (let x = 0; x < this.width; x++) { // iterate through all x coordinates
+        //     for (let y = 0; y < this.height; y++) { // iterate through all y coordinates
+        //         // context.rect(x * pixelsPerTile + pixelsXOffset, canvasHeight - ((y + 1) * pixelsPerTile + pixelsYOffset), pixelsPerTile, pixelsPerTile); // draw a white border around each tile
+        //         let heatmapValue = this.player.getPathfindingAlgorithm().heatmap[`(${x}, ${y})`];
+        //         let pixels = this.coordsToPixels(new Vector2(x, y));
+        //         context.fillText(Math.round(heatmapValue), pixels.getX(), pixels.getY(), pixelsPerTile);
+        //     }
+        // }
     }
 
     // method to get the player in the arena
@@ -291,3 +337,5 @@ class Arena {
         return this.currentMousePosition;
     }
 }
+
+console.log(IMAGE_LOADER["files/assets/textures/non-animated/grass.png"])

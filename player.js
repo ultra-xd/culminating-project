@@ -10,8 +10,8 @@ class Player {
         this.forcedVelocity = Vector2.ZERO_VECTOR; // set the player velocity that the player cannot control to 0
         this.forcedVelocityDifference = undefined;
         this.direction = "down"; // set the player direction to be facing downwards
-        this.defaultSpeed = Math.E; // set the speed of the player
-        this.pathfindingAlgorithm = new PathfindingAlgorithm(new Vector2(Math.floor(this.position.getX()), Math.floor(this.position.getY())), 20, this.arena); // create a pathfinding algorithm to the position of the player
+        this.defaultSpeed = Math.E; // set the speed of the player (chose e for no particular reason)
+        this.pathfindingAlgorithm = new PathfindingAlgorithm(new Vector2(Math.floor(this.position.getX()), Math.floor(this.position.getY())), 100, this.arena); // create a pathfinding algorithm to the position of the player
         this.pathfindingAlgorithm.generateHeatMap(); // generate the pathfinding algorithm's heatmap
         this.pathfindingLastUpdated = 0; // integer to track when the pathfinding algorithm has last been updated
         this.animationFrame = 1; // set the frame id of the animation to be display
@@ -270,7 +270,7 @@ class Player {
     getClosestWalls() {
         let smallestDistance = undefined; // declare variable storing the smallest distance from any wall to player found so far
         let coordinates = []; // initalize array to store any coordinates of the closest walls
-        for (let wall of this.arena.obstructions) { // iterate through all walls in the arena
+        for (let wall of arrayCombine(this.arena.obstructions, this.arena.getTowers())) { // iterate through all walls in the arena
             let distance = Math.sqrt((wall.getX() + 0.5 - this.position.getX()) ** 2 + (wall.getY() + 0.5 - this.position.getY()) ** 2); // get the distance from the center of the wall to the center of the player
             if (smallestDistance == undefined) { // check if there is a smallest distance found so far
                 smallestDistance = distance; // set the smallest distance value to the distance from the wall to player

@@ -57,3 +57,14 @@ function arrayLastIndexOf(array, element) {
     }
     return undefined; // return undefined if element is not in the array
 }
+
+function arrayCombine() {
+    let newArray = [];
+    let args = arguments;
+    for (let array of args) {
+        for (let element of array) {
+            arrayPush(newArray, element);
+        }
+    }
+    return newArray;
+}

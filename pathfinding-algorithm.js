@@ -77,6 +77,7 @@ class PathfindingAlgorithm {
                     // we don't need to add this tile to the list of unvisited nodes since it is a wall
                 }
             }
+            arrayDelete(unvisitedNodes, 0); // delete the old node
             // check if the list of unvisited nodes is empty
             if (unvisitedNodes.length != 0) {
                 // if not,
@@ -84,7 +85,6 @@ class PathfindingAlgorithm {
                 distance = this.heatmap[newNode]; // get the new distance
                 currentX = newNode.getX(); // get new coordinates of node
                 currentY = newNode.getY();
-                arrayDelete(unvisitedNodes, 0); // delete the old node
             }
         }
     }
@@ -92,7 +92,7 @@ class PathfindingAlgorithm {
     // function to get a unit vector in the direction of closest path
     getVector(node) {
         // generate a heatmap if it does not exist yet
-        if (this.heatmap == undefined) { // check if the heatmap exists
+        if (this.heatmap == undefined || this.heatmap == []) { // check if the heatmap exists
             this.generateHeatMap(); // generate new heatmap if it does not
         }
         let neighbourVectors = []; // create a array to store neighbouring vectors

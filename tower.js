@@ -2,11 +2,13 @@
 
 // class for tower
 class Tower {
+
+    static TEXTURE = IMAGE_LOADER["files/assets/textures/non-animated/tower.png"];
     constructor(x, y, arena) {
         this.position = new Vector2(x, y);
         this.arena = arena;
         this.ticksSinceShot = 0;
-        this.ticksPerPeriod = randomInteger(90, 150);
+        this.ticksPerPeriod = randomInteger(180, 300);
         this.width = 1;
         this.height = 2;
     }
@@ -15,7 +17,7 @@ class Tower {
         this.ticksSinceShot++;
         if (this.ticksSinceShot > this.ticksPerPeriod) {
             this.ticksSinceShot = 0;
-            this.ticksPerPeriod = randomInteger(180, 420);
+            this.ticksPerPeriod = randomInteger(180, 300);
             let number = randomInteger(1, 5);
             if (number <= 2) {
                 this.shootFireball();
@@ -34,7 +36,8 @@ class Tower {
         context.fillStyle = "orange";
         const pixelCoords = this.arena.coordsToPixels(this.position); // get the position of the player on the screen
         const unitLength = this.arena.getUnitLength(); // get how large 1 tile is on the display to properly size the player
-        context.fillRect(pixelCoords.getX(), pixelCoords.getY() - this.height * unitLength, this.width * unitLength, this.height * unitLength);
+        // context.fillRect(pixelCoords.getX(), pixelCoords.getY() - this.height * unitLength, this.width * unitLength, this.height * unitLength);
+        context.drawImage(Tower.TEXTURE, pixelCoords.getX(), pixelCoords.getY() - this.height * unitLength, this.width * unitLength, this.height * unitLength);
         // console.log("drawing")
     }
     getPosition() {
@@ -43,6 +46,7 @@ class Tower {
 }
 
 class Fireball {
+    static TEXTURE = IMAGE_LOADER["files/assets/textures/non-animated/fireball.png"]
     constructor(x, y, finalX, finalY, arena) {
         this.position = new Vector2(x, y);
         this.initialPosition = this.position;
@@ -56,6 +60,7 @@ class Fireball {
         this.arena = arena;
         this.power = 5;
         this.damage = 20;
+        this.TEXTURE_DEFAULT_DIRECTION = Math.PI * 5 / 4;
     }
 
     tick() {
@@ -96,16 +101,23 @@ class Fireball {
     }
 
     draw(context) {
-        const positionPixelCoords = this.arena.coordsToPixels(this.position); // get the position of the player on the screen
+        const pixelCoords = this.arena.coordsToPixels(this.position); // get the position of the player on the screen
         const finalPositionPixelCoords = this.arena.coordsToPixels(this.finalPosition); // get the final position of the fireball on the screen
         // console.log(pixelCoords);
         const unitLength = this.arena.getUnitLength(); // get how large 1 tile is on the display to properly size the player
 
-        context.fillStyle = "blue";
+        // context.fillStyle = "blue";
 
-        context.beginPath();
-        context.arc(positionPixelCoords.getX(), positionPixelCoords.getY(), this.radius * unitLength, 0, 2 * Math.PI);
-        context.fill();
+        // context.beginPath();
+        // context.arc(positionPixelCoords.getX(), positionPixelCoords.getY(), this.radius * unitLength, 0, 2 * Math.PI);
+        // context.fill();
+        let angle = this.velocity.getAngle();
+
+        context.translate(pixelCoords.getX(), pixelCoords.getY());
+        context.rotate((angle - this.TEXTURE_DEFAULT_DIRECTION) * -1);
+        context.translate(-1 * pixelCoords.getX(), -1 * pixelCoords.getY());
+        context.drawImage(Fireball.TEXTURE, pixelCoords.getX() - (unitLength * this.radius), pixelCoords.getY() - (unitLength * this.radius), unitLength * this.radius * 2, unitLength * this.radius * 2);
+        context.setTransform(1, 0, 0, 1, 0, 0);
 
         context.fillStyle = "rgba(255, 0, 0, 0.5)";
 

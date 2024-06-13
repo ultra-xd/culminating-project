@@ -18,6 +18,7 @@ class Enemy {
         this.arena = arena; // set the arena so that collisions and player-enemy interactions can occur
         this.type = type; // set the type of enemy (zombie, skeleton)
         this.size = 0.5; // set the size of the enemy in tile units
+        this.displaySize = 0.75;
         this.speed; // declare the enemy speed variable
         // zombies are slower than skeletons
         if (this.type == Enemy.ZOMBIE) { // check if the enemy is a zombie
@@ -35,8 +36,14 @@ class Enemy {
         this.shootingRange = 3;
         this.isShooting = false;
         this.shootingTicks = 0;
-        this.shootingTicksLength = 120;
+        this.shootingTicksMax = 120;
         this.shootingStrength = 5;
+        this.shootingAnimationPhase = 1;
+
+        // animation variables
+        this.animationTicks = 0;
+        this.animationPhase = 1;
+        this.direction = "down";
     }
 
     // function to update the enemy
@@ -51,6 +58,25 @@ class Enemy {
                 this.controlledVelocity = Vector2.ZERO_VECTOR;
             }
         }
+        let angle
+        if (this.controlledVelocity != Vector2.ZERO_VECTOR) {
+            angle = this.controlledVelocity.getAngle();
+        } else {
+            angle = this.arena.getPlayer().getPosition().subtract(this.position).getAngle();
+        }
+        if (Math.PI / 4 <= angle && angle <= 3 * Math.PI / 4) { // check if the player is looking up (45 & 135 degrees, inclusive)
+            this.direction = "up"; // set direction of player up
+        }
+        else if (3 * Math.PI / 4 < angle && angle < 5 * Math.PI / 4) { // check if the player is looking left (135 & 225 degrees, exclusive)
+            this.direction = "left"; // set direction of player left
+        }
+        else if (5 * Math.PI / 4 <= angle && angle <= 7 * Math.PI / 4) { // check if the player is looking down (225 & 315 degrees, exclusive)
+            this.direction = "down"; // set direction of player down
+        }
+        else { // otherwise, player is facing right
+            this.direction = "right"; // set direction of player right
+        }
+
         // console.log(this.controlledVelocity);
         if (!this.forcedVelocity.equals(Vector2.ZERO_VECTOR)) {
             if (this.forcedVelocityDifference == undefined) {
@@ -165,11 +191,23 @@ class Enemy {
                 }
             } else {
                 this.shootingTicks++;
-                if (this.shootingTicks > this.shootingTicksLength) {
+                if (this.shootingTicks >= this.shootingTicksMax) {
                     this.arena.launchArrow(this.position, playerPosition.subtract(this.position).unit().multiply(this.shootingStrength));
                     this.isShooting = false;
                 }
             }
+        }
+        if (!this.isShooting) {
+            this.animationTicks++;
+            if (this.animationTicks >= 5) {
+                this.animationPhase++;
+                this.animationTicks = 0;
+                if (this.animationPhase > 8) {
+                    this.animationPhase = 1;
+                }
+            }
+        } else {
+            this.shootingAnimationPhase = Math.floor(this.shootingTicks / 40) + 1;
         }
         // console.log(this.position)
     }
@@ -186,7 +224,7 @@ class Enemy {
     getClosestWalls() {
         let smallestDistance = undefined; // declare variable storing the smallest distance from any wall to player found so far
         let coordinates = []; // initalize array to store any coordinates of the closest walls
-        for (let wall of this.arena.obstructions) { // iterate through all walls in the arena
+        for (let wall of arrayCombine(this.arena.obstructions, this.arena.getTowers())) { // iterate through all walls in the arena
             let distance = Math.sqrt((wall.getX() + 0.5 - this.position.getX()) ** 2 + (wall.getY() + 0.5 - this.position.getY()) ** 2); // get the distance from the center of the wall to the center of the player
             if (smallestDistance == undefined) { // check if there is a smallest distance found so far
                 smallestDistance = distance; // set the smallest distance value to the distance from the wall to player
@@ -228,7 +266,20 @@ class Enemy {
         context.fillStyle = (this.type == Enemy.ZOMBIE) ? "red": "yellow";
         const pixelCoords = this.arena.coordsToPixels(this.position);
         const unitLength = this.arena.getUnitLength();
-        context.fillRect(pixelCoords.getX() - (unitLength * this.size / 2), pixelCoords.getY() - (unitLength * this.size / 2), unitLength * this.size, unitLength * this.size);
+        let texture;
+        if (this.type == Enemy.ZOMBIE) {
+            texture = IMAGE_LOADER[`files/assets/enemies/zombie/${this.direction}/${this.animationPhase}${this.direction}.png`];
+            
+        } else {
+            if (!this.isShooting) {
+                texture = IMAGE_LOADER[`files/assets/enemies/skeleton/${this.direction}/${this.animationPhase}${this.direction}.png`];
+            } else {
+                texture = IMAGE_LOADER[`files/assets/enemies/skeleton/${this.direction}/${this.shootingAnimationPhase}shooting${this.direction}.png`];
+            }   console.log(`files/assets/enemies/skeleton/${this.direction}/${this.shootingAnimationPhase}shooting${this.direction}.png`)
+            // context.drawImage(texture, pixelCoords.getX() - (unitLength * this.displaySize / 2), pixelCoords.getY() - (unitLength * this.displaySize / 2), unitLength * this.displaySize, unitLength * this.displaySize);
+        }
+        context.drawImage(texture, pixelCoords.getX() - (unitLength * this.displaySize / 2), pixelCoords.getY() - (unitLength * this.displaySize / 2), unitLength * this.displaySize, unitLength * this.displaySize);
+        
 
         // draw health bar
         context.fillStyle = "red";
@@ -240,10 +291,13 @@ class Enemy {
 }
 
 class Arrow {
+    static TEXTURE = IMAGE_LOADER["files/assets/textures/non-animated/arrow.png"];
     constructor(position, velocity, arena) {
         this.position = position;
         this.initialPosition = position;
         this.velocity = velocity;
+        this.angle = this.velocity.getAngle();
+        this.TEXTURE_DEFAULT_DIRECTION = Math.PI * 5 / 4;
         this.arena = arena;
         this.size = 0.25;
         this.range = 8;
@@ -356,7 +410,7 @@ class Arrow {
     getClosestWalls() {
         let smallestDistance = undefined; // declare variable storing the smallest distance from any wall to player found so far
         let coordinates = []; // initalize array to store any coordinates of the closest walls
-        for (let wall of this.arena.obstructions) { // iterate through all walls in the arena
+        for (let wall of arrayCombine(this.arena.obstructions, this.arena.getTowers())) { // iterate through all walls in the arena
             let distance = Math.sqrt((wall.getX() + 0.5 - this.position.getX()) ** 2 + (wall.getY() + 0.5 - this.position.getY()) ** 2); // get the distance from the center of the wall to the center of the player
             if (smallestDistance == undefined) { // check if there is a smallest distance found so far
                 smallestDistance = distance; // set the smallest distance value to the distance from the wall to player
@@ -386,8 +440,13 @@ class Arrow {
         // console.log(pixelCoords)
         const unitLength = this.arena.getUnitLength();
 
-        context.fillStyle = "blue";
-        context.fillRect(pixelCoords.getX() - unitLength * this.size / 2, pixelCoords.getY() - unitLength * this.size / 2, unitLength * this.size, unitLength * this.size);
+        context.translate(pixelCoords.getX(), pixelCoords.getY());
+        context.rotate((this.angle - this.TEXTURE_DEFAULT_DIRECTION) * -1);
+        context.translate(-1 * pixelCoords.getX(), -1 * pixelCoords.getY());
+        context.drawImage(Arrow.TEXTURE, pixelCoords.getX() - (unitLength * this.size / 2), pixelCoords.getY() - (unitLength * this.size / 2), unitLength * this.size, unitLength * this.size);
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        // context.fillStyle = "blue";
+        // context.fillRect(pixelCoords.getX() - unitLength * this.size / 2, pixelCoords.getY() - unitLength * this.size / 2, unitLength * this.size, unitLength * this.size);
     }
     getIfCollidedWithWall() {
         return this.isCollidedWithWall;

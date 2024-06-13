@@ -8,3 +8,7 @@ function linearInterpolation(value1, value2, difference) {
 function randomInteger(min, max) { // generates random number from min to max, inclusive
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
+
+function randomChoice(array) {
+    return array[randomInteger(0, array.length - 1)];
+}
