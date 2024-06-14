@@ -58,13 +58,14 @@ function arrayLastIndexOf(array, element) {
     return undefined; // return undefined if element is not in the array
 }
 
+// function to combine many arrays into one: requires the input of many arrays
 function arrayCombine() {
-    let newArray = [];
-    let args = arguments;
-    for (let array of args) {
-        for (let element of array) {
-            arrayPush(newArray, element);
+    let newArray = []; // create a new empty array
+    let args = arguments; // get all arrays in argument
+    for (let array of args) { // iterate through all arrays provided
+        for (let element of array) { // iterate through each element in the array
+            arrayPush(newArray, element); // add to new array
         }
     }
-    return newArray;
+    return newArray; // return the combined array
 }

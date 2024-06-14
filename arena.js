@@ -9,23 +9,16 @@ class Arena {
         this.arenaType = randomChoice(Object.keys(ARENAS)); // determine the map layout using ID
         // this.arenaType = 2;
         this.obstructions = []; // create array of coordinates for walls on map
-        this.enemies = [
-            // new Enemy(4, 4, Enemy.SKELETON, this),
-            // new Enemy(5, 5, Enemy.ZOMBIE, this),
-            // new Enemy(8, 9, Enemy.ZOMBIE, this),
-            // new Enemy(7, 9, Enemy.SKELETON, this),
-            // new Enemy(1, 7, Enemy.ZOMBIE, this),
-            // new Enemy(3, 14, Enemy.SKELETON, this)
-        ]; // create array of enemies
-        this.arrows = [];
-        this.towers = [];
-        this.enemySpawners = [];
+        this.enemies = []; // create array of enemies
+        this.arrows = []; // create array of arrows
+        this.towers = []; // create array of towers
+        this.enemySpawners = []; // create array of enemy spawners
         this.generateArena(); // generate map layout
-        this.fireballs = [];
+        console.log("generated")
+        this.fireballs = []; // create array of fireballs
         this.width = 15; // set # of tiles horizontally on map
         this.height = 10; // set # of tiles vertically on map
-        const playerPosition = ARENAS[this.arenaType]["playerStartPosition"];
-        this.player = new Player(playerPosition.getX(), playerPosition.getY(), this); // create a new player
+        this.player; // create a new player
         this.currentMousePosition = undefined;
         this.deathDelayTicks = 0;
         this.deathDelayLimit = 120;
@@ -33,22 +26,25 @@ class Arena {
 
     // method to generate arena layout
     generateArena() {
-        this.towers = [];
-        this.enemySpawners = [];
-        // this.enemies = [];
+        this.towers = []; // clear list of towers
+        this.enemySpawners = []; // clear list of enemy spawners
         if (arrayIncludes(Object.keys(ARENAS), this.arenaType)) { // check if there is an arena with stored ID
             this.obstructions = ARENAS[this.arenaType]["walls"]; // get array of walls on the arena
-            for (let tower of ARENAS[this.arenaType]["towers"]) {
-                arrayPush(this.towers, new Tower(tower.getX(), tower.getY(), this));
+            for (let tower of ARENAS[this.arenaType]["towers"]) { // iterate through all towers supposed to be generated
+                arrayPush(this.towers, new Tower(tower.getX(), tower.getY(), this)); // generate all of the towers by adding to array of towers
             }
-            for (let enemySpawner of ARENAS[this.arenaType]["enemySpawners"]) {
-                arrayPush(this.enemySpawners, new EnemySpawner(enemySpawner.getX(), enemySpawner.getY(), this));
+            for (let enemySpawner of ARENAS[this.arenaType]["enemySpawners"]) { // iterate through all enemy spawners supposed to be generated
+                arrayPush(this.enemySpawners, new EnemySpawner(enemySpawner.getX(), enemySpawner.getY(), this)); // generate all enemy spawners by adding to array of enemy spawners
             }
-            for (let enemy of ARENAS[this.arenaType]["spawnedEnemies"]) {
-                this.spawnEnemy(enemy);
+            for (let enemy of ARENAS[this.arenaType]["spawnedEnemies"]) { // iterate through all enemies supposed to be spawned
+                this.spawnEnemy(enemy); // spawn all of the enemies
             }
-        } else {
+            const playerPosition = ARENAS[this.arenaType]["playerStartPosition"]; // get player position
+            console.log("playerPosition")
+            this.player = new Player(playerPosition.getX(), playerPosition.getY(), this); // create player at player position
+        } else { // arena type is unknown and a random arena is generated
             this.obstructions = []; // generate no walls if ID is not valid
+            this.player = new Player(1, 1, this); // create player at 1, 1 coordinates
         }
     }
 
@@ -60,56 +56,67 @@ class Arena {
 
     // method to update the arena every tick
     tick(buttonsPressed) {
-        if (this.player.getIfAlive()) {
+        console.log("1")
+        if (this.player.getIfAlive()) { // check if the player is alive
             this.player.tick(buttonsPressed); // update the player every tick
-        } else {
-            this.deathDelayTicks++;
-            if (this.deathDelayTicks > this.deathDelayLimit) {
-                console.log("E")
-                endGame();
+        } else { // otherwise, player is dead
+            this.deathDelayTicks++; // add ticks to death screen so that the user has time to process the player died
+            if (this.deathDelayTicks > this.deathDelayLimit) { // check if enough ticks have passed since death
+                endGame(); // end the game
             }
         }
-        for (let enemySpawner of this.enemySpawners) {
-            enemySpawner.tick();
+        console.log("2")
+        // tick all elements of the game
+        for (let enemySpawner of this.enemySpawners) { // iterate through all enemy spawners
+            enemySpawner.tick(); // tick enemy spawners
         }
+        console.log("3")
         for (let enemy of this.enemies) { // iterate through all enemies in the arena
             enemy.tick(); // tick all enemies
         }
-        for (let arrow of this.arrows) {
-            arrow.tick();
+        console.log("4")
+        for (let arrow of this.arrows) { // iterate through all arrows
+            arrow.tick(); // tick all arrows
         }
-        for (let tower of this.towers) {
-            tower.tick();
+        console.log("5")
+        for (let tower of this.towers) { // iterate through all towers
+            tower.tick(); // tick all towers
         }
-        for (let fireball of this.fireballs) {
-            fireball.tick();
+        console.log("6")
+        for (let fireball of this.fireballs) { // iterate through all fireballs
+            fireball.tick(); // tick all fireballs
         }
-        for (let i = 0; i < this.enemies.length; i++) {
-            let enemy = this.enemies[i];
-            if (enemy.getHealth() <= 0) {
-                arrayDelete(this.enemies, i);
+        console.log("7")
+        // create enemy death mechanism
+        for (let i = 0; i < this.enemies.length; i++) { // iterate through all enemies
+            let enemy = this.enemies[i]; // get the enemy
+            if (enemy.getHealth() <= 0) { // check if the enemy health is less than 0 i.e dead
+                arrayDelete(this.enemies, i); // delete enemy from array of enemies
             }
         }
 
-        for (let i = 0; i < this.arrows.length; i++) {
-            let arrow = this.arrows[i];
-            if (arrow.getIfCollidedWithPlayer() || arrow.getDespawnTimer() > arrow.getDespawnLimit()) {
-                arrayDelete(this.arrows, i);
+        // create arrow despawning mechanism
+        for (let i = 0; i < this.arrows.length; i++) { // iterate through all arrows
+            let arrow = this.arrows[i]; // get the arrow
+            if (arrow.getIfCollidedWithPlayer() || arrow.getDespawnTimer() > arrow.getDespawnLimit()) { // check if the arrow has already collided with the player or if it has passed its despawn timer
+                arrayDelete(this.arrows, i); // delete arrow from array of arrows
             }
         }
-        for (let i = 0; i < this.fireballs.length; i++) {
-            let fireball = this.fireballs[i];
-            if (fireball.getIfExploded()) {
-                arrayDelete(this.fireballs, i);
+        // create fireball exploding & despawning mechanism
+        for (let i = 0; i < this.fireballs.length; i++) { // iterate through all fireballs
+            let fireball = this.fireballs[i]; // get the fireball
+            if (fireball.getIfExploded()) { // check if the fireball has exploded
+                arrayDelete(this.fireballs, i); // delete fireball from array of fireballs
             }
         }
-        // console.log(this.projectiles);
-        let mousePosition = game.getCanvas().getMousePosition();
-        if (mousePosition != undefined) {
-            let coordsMousePosition = this.pixelsToCoords(mousePosition);
-            if (coordsMousePosition.getX() >= 0 && coordsMousePosition.getX() < this.width &&
+
+        //  get mouse position on canvas in tile units
+        let mousePosition = game.getCanvas().getMousePosition(); // get the mouse position in pixels
+        if (mousePosition != undefined) { // check if the mouse position exists and has been updated
+            let coordsMousePosition = this.pixelsToCoords(mousePosition); // get the mouse position in tile units
+            if (coordsMousePosition.getX() >= 0 && coordsMousePosition.getX() < this.width && // check if mouse position is out of bounds
                 coordsMousePosition.getY() >= 0 && coordsMousePosition.getY() < this.height) {
-                this.currentMousePosition = coordsMousePosition;
+                this.currentMousePosition = coordsMousePosition; // update the mouse position
             }
         }
     }
@@ -172,34 +179,39 @@ class Arena {
                 );
     }
 
+    // method to return if given coordinates is a tower
     isTower(coordinates) {
-        for (let tower of this.towers) {
-            if (coordinates.equals(tower.getPosition())) {
-                return true;
+        for (let tower of this.towers) { // iterate through all towers
+            if (coordinates.equals(tower.getPosition())) { // check if tower coordinate is equal to coordinates given
+                return true; // return positive result
             }
         }
-        return false;
+        return false; // return negative result
     }
 
-    getTowers() {
-        let towers = [];
-        for (let tower of this.towers) {
-            arrayPush(towers, tower.getPosition());
+    // method to get all positions of towers
+    getTowerPositions() {
+        let towers = []; // create new array of tower positions
+        for (let tower of this.towers) { // iterate through all towers
+            arrayPush(towers, tower.getPosition()); // add the tower position to array of tower positions
         }
-        return towers;
+        return towers; // return array of tower positions
     }
 
+    // method to launch an arrow at coordinates at a specific velocity`
     launchArrow(coordinates, velocity) {
-        arrayPush(this.arrows, new Arrow(coordinates, velocity, this));
+        arrayPush(this.arrows, new Arrow(coordinates, velocity, this)); // add a new arrow to array of arrows at the coordinates & velocity given
     }
 
+    // method to laucnh a fireball
     launchFireball(fireball) {
-        arrayPush(this.fireballs, fireball);
+        arrayPush(this.fireballs, fireball); // add fireball to array of fireballs
     }
 
+    // method to spawn a random enemy at a given position
     spawnEnemy(position) {
-        let type = (randomInteger(0, 2) == 0) ? Enemy.SKELETON: Enemy.ZOMBIE;
-        arrayPush(this.enemies, new Enemy(position.getX(), position.getY(), type, this));
+        let type = (randomInteger(0, 2) == 0) ? Enemy.SKELETON: Enemy.ZOMBIE; // randomize whether the enemy will be a zombie or skeleton (~67% skeleton, ~33% zombie)
+        arrayPush(this.enemies, new Enemy(position.getX(), position.getY(), type, this)); // add a new enemy at the specified position and random type
     }
 
     // method to return # of pixels in 1 tile
@@ -240,22 +252,22 @@ class Arena {
             pixelsYOffset = (canvasHeight - (pixelsPerTile * this.height)) / 2;  // change y offset so that display is center of screen
         }
 
-        const backgroundAspectRatio = 1920 / 1548;
-        let backgroundWidth, backgroundHeight;
-        if (canvasPixelsRatio >= canvasPixelsRatio) {
-            backgroundWidth = canvasWidth;
-            backgroundHeight = backgroundWidth / backgroundAspectRatio;
+        // draw background
+        // background image must fit on canvas, so this code is to determine the optimal width & height of the image
+        const backgroundAspectRatio = 1920 / 1548; // constant to store background image aspect ratio
+        let backgroundWidth, backgroundHeight; // declare background width & height variables in pixels
+        if (canvasPixelsRatio >= backgroundAspectRatio) { // check if the relative width of the canvas is larger than or equal to the relative width of the canvas 
+            backgroundWidth = canvasWidth; // set background width to canvas width
+            backgroundHeight = backgroundWidth / backgroundAspectRatio; // set background height to be proportional to that of the background width
         } else {
-            backgroundHeight = canvasHeight;
-            backgroundWidth = backgroundHeight * backgroundAspectRatio;
+            backgroundHeight = canvasHeight; // set background height to canvas height
+            backgroundWidth = backgroundHeight * backgroundAspectRatio; // set background width to be proportional to that of the background height
         }
 
+        // draw the background image so that it fits on the canvas in the center
         context.drawImage(Arena.BACKGROUND_IMAGE, canvasWidth / 2 - backgroundWidth / 2, canvasHeight / 2 - backgroundHeight / 2, backgroundWidth, backgroundHeight);
-        
-        // console.log(pixelsPerTile);
-        // console.log(`${pixelsPerTile * this.width} x ${pixelsPerTile * this.height}`);
-        // console.log(`${canvasWidth} x ${canvasHeight}`);
 
+        // draw tiles
         for (let x = 0; x < this.width; x++) { // iterate through each x-coordinate tile
             for (let y = 0; y < this.height; y++) { // iterate each y-coordinate tile
                 if (arrayIncludes(this.obstructions, new Vector2(x, y))) { // check if the x and y coordinates contain an obstruction
@@ -271,10 +283,10 @@ class Arena {
         // start drawing grid pattern over tiles
         context.beginPath(); // start path of context
         context.lineWidth = "3"; // customize width of lines to 3 pixels
-        context.strokeStyle = "black"; // customize lines to be white
+        context.strokeStyle = "black"; // customize lines to be black
         for (let x = 0; x < this.width; x++) { // iterate through all x coordinates
             for (let y = 0; y < this.height; y++) { // iterate through all y coordinates
-                context.rect(x * pixelsPerTile + pixelsXOffset, canvasHeight - ((y + 1) * pixelsPerTile + pixelsYOffset), pixelsPerTile, pixelsPerTile); // draw a white border around each tile
+                context.rect(x * pixelsPerTile + pixelsXOffset, canvasHeight - ((y + 1) * pixelsPerTile + pixelsYOffset), pixelsPerTile, pixelsPerTile); // draw a black border around each tile
                 // let heatmapValue = this.player.getPathfindingAlgorithm().heatmap[`(${x}, ${y})`];
                 // let pixels = this.coordsToPixels(new Vector2(x, y));
                 // context.fillText(Math.round(heatmapValue), pixels.getX(), pixels.getY(), pixelsPerTile);
@@ -283,33 +295,36 @@ class Arena {
 
         context.stroke(); // draw all rectangles
 
-        if (this.currentMousePosition != undefined) {
-            context.beginPath();
+        // code to draw highlighted tile on arena
+        if (this.currentMousePosition != undefined) { // check if the mouse position exists
+            context.beginPath(); // start path of context
 
-            let highlightedSquare = this.currentMousePosition.floor();
-            context.strokeStyle = "white";
-            context.lineWidth = "3";
-            context.rect(highlightedSquare.getX() * pixelsPerTile + pixelsXOffset, canvasHeight - ((highlightedSquare.getY() + 1) * pixelsPerTile + pixelsYOffset), pixelsPerTile, pixelsPerTile);
+            let highlightedSquare = this.currentMousePosition.floor(); // get the square that the mouse is on
+            context.strokeStyle = "white"; // customize lines to be black
+            context.lineWidth = "3"; // customize width of lines to 3 pixels
+            context.rect(highlightedSquare.getX() * pixelsPerTile + pixelsXOffset, canvasHeight - ((highlightedSquare.getY() + 1) * pixelsPerTile + pixelsYOffset), pixelsPerTile, pixelsPerTile); // draw a white border around the highlighted tile
             
-            context.stroke();
+            context.stroke(); // draw the rectangle
         }
-        for (let enemySpawner of this.enemySpawners) {
-            enemySpawner.draw(context);
+
+        // draw everything else
+        for (let enemySpawner of this.enemySpawners) { // iterate through all enemy spawners
+            enemySpawner.draw(context); // draw enemy spawners
         }
-        if (this.player.getIfAlive()) {  
+        if (this.player.getIfAlive()) { // check if player is alive
             this.player.draw(context); // draw the player
         }
         for (let enemy of this.enemies) { // iterate through all enemies
             enemy.draw(context); // draw all enemies
         }
-        for (let arrow of this.arrows) {
-            arrow.draw(context);
+        for (let arrow of this.arrows) { // iteraet through all arrows
+            arrow.draw(context); // draw all arrows
         }
-        for (let tower of this.towers) {
-            tower.draw(context);
+        for (let tower of this.towers) { // iterate through all towers
+            tower.draw(context); // draw all towers
         }
-        for (let fireball of this.fireballs) {
-            fireball.draw(context);
+        for (let fireball of this.fireballs) { // iterate through all fireballs
+            fireball.draw(context); // draw all fireballs
         }
 
         // context.fillStyle = "black";
@@ -329,13 +344,13 @@ class Arena {
         return this.player; // return the player
     }
 
+    // method to get all enemies in arena
     getEnemies() {
-        return this.enemies;
+        return this.enemies; // return array of enemies
     }
-
+    
+    // method to get mouse position in tile units
     getCoordinateMousePosition() {
-        return this.currentMousePosition;
+        return this.currentMousePosition; // return mouse position in tile units
     }
 }
-
-console.log(IMAGE_LOADER["files/assets/textures/non-animated/grass.png"])

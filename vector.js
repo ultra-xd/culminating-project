@@ -117,8 +117,9 @@ class Vector2 {
         return new Vector2(Math.cos(angle) * magnitude, Math.sin(angle) * magnitude); // return the vector with x & y components based on magnitude & direction (x = cosa * magnitude, y = sina * magnitude)
     }
 
+    // method to get vector with floored components
     floor() {
-        return new Vector2(Math.floor(this.x), Math.floor(this.y));
+        return new Vector2(Math.floor(this.x), Math.floor(this.y)); // return vector with x & y components floored
     }
 
     // method to return a string representation of the vector
@@ -127,7 +128,7 @@ class Vector2 {
     }
 
     // static method to add together multiple vectors
-    static sum(/**/) {
+    static sum() {
         let args = arguments; // get an array of vectors
         let vector = Vector2.ZERO_VECTOR; // create a zero vector to add all the vectors to
         for (let v of args) { // iterate through all vectors

@@ -28,13 +28,14 @@ class Rectangle {
         }
         return false; // return that rectangles are not intersecting
     }
+
+    // method to check if a point is in a rectangle
     pointIn(point) {
-        if (
-            point.getX() >= this.x1 && point.getX() <= this.x2 &&
-            point.getY() >= this.y1 && point.getY() <= this.y2
+        if (point.getX() >= this.x1 && point.getX() <= this.x2 && // check if the point is within the x bounds of rectangle
+            point.getY() >= this.y1 && point.getY() <= this.y2 // check if the point is within the y bounds of rectangle
         ) {
-            return true;
+            return true; // return positive result
         }
-        return false;
+        return false; // otherwise return negative result
     }
 }

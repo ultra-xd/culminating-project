@@ -1,11 +1,13 @@
 "use strict";
 
 const TPS = 60; // set the ticks per second to 60
+// constants to differentiate vertical, horizontal & diagonal collisions in collision system
 const VERTICAL = 0;
 const HORIZONTAL = 1;
 const DIAGONAL = 2;
 
 // create dictionary for all arenas
+// first dimension stores the arena type/id, second dimension stores information (wall positions, tower positions, enemy spawner & enemy positions & player position)
 const ARENAS = {
     1: {
         "walls": [ // store array of wall coordinates
@@ -79,21 +81,21 @@ const ARENAS = {
             new Vector2(13, 10),
             new Vector2(14, 10)
         ],
-        "towers": [
+        "towers": [ // store array of tower coordinates
             new Vector2(1, 7),
             new Vector2(13, 7)
         ],
-        "enemySpawners": [
+        "enemySpawners": [ // store array of enemy spawner coordinates
             new Vector2(6, 4),
             new Vector2(7, 5)
         ],
-        "spawnedEnemies": [
+        "spawnedEnemies": [ // store array of enemy coordinates
             new Vector2(7, 7)
         ],
-        "playerStartPosition": new Vector2(1, 1)
+        "playerStartPosition": new Vector2(1, 1) // store player spawn position
     },
     2: {
-        "walls": [
+        "walls": [ // store array of wall coordinates
             new Vector2(8, 0),
             new Vector2(9, 0),
             new Vector2(10, 0),
@@ -222,20 +224,20 @@ const ARENAS = {
             new Vector2(13, 10),
             new Vector2(14, 10)
         ],
-        "towers": [
+        "towers": [ // store array of tower coordinates
             new Vector2(7, 3)
         ],
-        "enemySpawners": [
+        "enemySpawners": [ // store array of enemy spawner coordinates
             new Vector2(12, 7),
             new Vector2(3, 6)
         ],
-        "spawnedEnemies": [
+        "spawnedEnemies": [ // store array of enemy coordinates
             new Vector2(3.5, 2.5)
         ],
-        "playerStartPosition": new Vector2(0.5, 0.5)
+        "playerStartPosition": new Vector2(0.5, 0.5) // store player spawn position
     },
     3: {
-        "walls": [
+        "walls": [// store array of wall coordinates
             new Vector2(5, 1),
             new Vector2(6, 1),
             new Vector2(7, 1),
@@ -323,18 +325,18 @@ const ARENAS = {
             new Vector2(13, 10),
             new Vector2(14, 10)
         ],
-        "towers": [
+        "towers": [ // store array of wall coordinates
             new Vector2(0, 4),
             new Vector2(14, 4)
         ],
-        "enemySpawners": [
+        "enemySpawners": [ // store array of enemy spawner coordinates
             new Vector2(6, 4),
             new Vector2(6, 5),
         ],
-        "spawnedEnemies": [
+        "spawnedEnemies": [ // store array of enemy coordinates
             new Vector2(11, 5)
         ],
-        "playerStartPosition": new Vector2(0.5, 0.5)
+        "playerStartPosition": new Vector2(0.5, 0.5) // store player spawn position
     }
 };
 
