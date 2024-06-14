@@ -22,6 +22,7 @@ class Arena {
         this.deathDelayLimit = 120; // store number of ticks until game ends after player's death
         const playerPosition = ARENAS[this.arenaType]["playerStartPosition"]; // get player position
         this.player = new Player(playerPosition.getX(), playerPosition.getY(), this); // create player at player position
+        this.timer = new Timer(this);
     }
 
     // method to generate arena layout
@@ -57,7 +58,7 @@ class Arena {
         } else { // otherwise, player is dead
             this.deathDelayTicks++; // add ticks to death screen so that the user has time to process the player died
             if (this.deathDelayTicks > this.deathDelayLimit) { // check if enough ticks have passed since death
-                endGame(); // end the game
+                endGame(this.timer.getString()); // end the game
             }
         }
         // tick all elements of the game
@@ -108,6 +109,7 @@ class Arena {
                 this.currentMousePosition = coordsMousePosition; // update the mouse position
             }
         }
+        this.timer.tick();
     }
 
     // method to convert coordinates to pixels on canvas
@@ -315,6 +317,7 @@ class Arena {
         for (let fireball of this.fireballs) { // iterate through all fireballs
             fireball.draw(context); // draw all fireballs
         }
+        this.timer.draw(context);
     }
 
     // method to get the player in the arena

@@ -4,7 +4,7 @@
 class EnemySpawner {
     constructor(x, y, arena) {
         this.position = new Vector2(x, y); // store position of enemy spawner
-        this.ticksPerPeriod = randomInteger(60, 90); // store number of ticks between each spawning cycle
+        this.ticksPerPeriod = randomInteger(600, 900); // store number of ticks between each spawning cycle
         this.periodTicks = 0; // store number of ticks since last spawning cycle
         this.arena = arena; // store arena
         this.size = 1; // store display size of the spawner
@@ -20,7 +20,7 @@ class EnemySpawner {
             this.periodTicks++; // add to period ticks
             if (this.periodTicks > this.ticksPerPeriod) { // check if the period ticks has exceeded number of ticks in a period
                 this.periodTicks = 0; // reset period ticks
-                this.ticksPerPeriod = randomInteger(60, 90); // get new random period length between 60 & 90 ticks
+                this.ticksPerPeriod = randomInteger(600, 900); // get new random period length between 60 & 90 ticks
                 // 30% chance of spawning enemies
                 let number = randomInteger(1, 10); // generate random number from 1-10
                 if (number <= 3) { // check if the number is less than 3 (corresponds to 30$ chance)

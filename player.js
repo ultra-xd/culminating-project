@@ -26,7 +26,7 @@ class Player {
         this.attackingAnimationFrame = 1; // set attack animation frame to 1
         this.attackingForce = 15; // set attacking force to 15 (will determine the knockback of attacks)
         this.reach = 2; // set distance the player can attack from to 2 units
-        this.health = 100000; // set health of player to 100
+        this.health = 100; // set health of player to 100
         this.recoveryFactor = 1/20; // set recovery factor of player to 1/20 (will determine how fast player recovers from forced velocities)
         this.isAlive = true; // set living state of player to alive
         
@@ -318,6 +318,11 @@ class Player {
         
         context.fillStyle = "green"; // set colour of rectangle to be drawn to green
         context.fillRect(unitLength / 2, unitLength / 2, unitLength * 5 * (this.health / 100), unitLength / 10); // draw rectangle covering part of health bar based on amount of health
+
+        context.fillStyle = "white";
+        let textWidth = context.measureText(verifiedUsername).width;
+        let margin = 5;
+        context.fillText(verifiedUsername, pixelCoords.getX() - textWidth / 2, pixelCoords.getY() - margin - (unitLength * this.size / 2));
     }
 
     // method to get position of player

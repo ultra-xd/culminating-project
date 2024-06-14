@@ -1,7 +1,8 @@
 "use strict";
 
 let game; // declare game variable
-
+let time;
+let verifiedUsername;
 // main function called on load of website
 function main() {
     // loadImages();
@@ -13,6 +14,7 @@ function main() {
 function startGame() {
     let username = document.getElementById("username-input").value; // get the username
     if (verifyUsername(username)) { // check if username is valid
+        verifiedUsername = username;
         game = new Game(); // create new game
         game.start(); // start game
         document.getElementById("canvas").hidden = false; // show canvas
@@ -22,11 +24,12 @@ function startGame() {
 }
 
 // function to end game
-function endGame() {
+function endGame(time) {
     game.end(); // end the game
     document.getElementById("canvas").hidden = true; // hide canvas & start menu
     document.getElementById("menu").hidden = true;
     document.getElementById("death-menu").hidden = false; // show death menu
+    document.getElementById("death-time").innerText = "Time: " + time; // update time
 }
 
 // function to return to main menu
