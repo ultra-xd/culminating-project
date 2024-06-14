@@ -1,8 +1,8 @@
 "use strict";
 
 let game; // declare game variable
-let time;
-let verifiedUsername;
+let time; // store final time on arena
+let verifiedUsername; // store username on aren
 // main function called on load of website
 function main() {
     // loadImages();
@@ -14,7 +14,7 @@ function main() {
 function startGame() {
     let username = document.getElementById("username-input").value; // get the username
     if (verifyUsername(username)) { // check if username is valid
-        verifiedUsername = username;
+        verifiedUsername = username; // set verified username to username
         game = new Game(); // create new game
         game.start(); // start game
         document.getElementById("canvas").hidden = false; // show canvas

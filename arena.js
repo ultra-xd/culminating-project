@@ -22,7 +22,7 @@ class Arena {
         this.deathDelayLimit = 120; // store number of ticks until game ends after player's death
         const playerPosition = ARENAS[this.arenaType]["playerStartPosition"]; // get player position
         this.player = new Player(playerPosition.getX(), playerPosition.getY(), this); // create player at player position
-        this.timer = new Timer(this);
+        this.timer = new Timer(this); // create new timer
     }
 
     // method to generate arena layout
@@ -109,7 +109,7 @@ class Arena {
                 this.currentMousePosition = coordsMousePosition; // update the mouse position
             }
         }
-        this.timer.tick();
+        this.timer.tick(); // update timer
     }
 
     // method to convert coordinates to pixels on canvas
@@ -317,7 +317,7 @@ class Arena {
         for (let fireball of this.fireballs) { // iterate through all fireballs
             fireball.draw(context); // draw all fireballs
         }
-        this.timer.draw(context);
+        this.timer.draw(context); // draw timer
     }
 
     // method to get the player in the arena

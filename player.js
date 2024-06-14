@@ -319,10 +319,11 @@ class Player {
         context.fillStyle = "green"; // set colour of rectangle to be drawn to green
         context.fillRect(unitLength / 2, unitLength / 2, unitLength * 5 * (this.health / 100), unitLength / 10); // draw rectangle covering part of health bar based on amount of health
 
-        context.fillStyle = "white";
-        let textWidth = context.measureText(verifiedUsername).width;
-        let margin = 5;
-        context.fillText(verifiedUsername, pixelCoords.getX() - textWidth / 2, pixelCoords.getY() - margin - (unitLength * this.size / 2));
+        // display username
+        context.fillStyle = "white"; // set font colour to white
+        let textWidth = context.measureText(verifiedUsername).width; // get width of text
+        let margin = 5; // set # pixels offset of text from player
+        context.fillText(verifiedUsername, pixelCoords.getX() - textWidth / 2, pixelCoords.getY() - margin - (unitLength * this.size / 2)); // display text right on top of middle of player
     }
 
     // method to get position of player
