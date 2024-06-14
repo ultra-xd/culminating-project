@@ -14,14 +14,14 @@ class Arena {
         this.towers = []; // create array of towers
         this.enemySpawners = []; // create array of enemy spawners
         this.generateArena(); // generate map layout
-        console.log("generated")
         this.fireballs = []; // create array of fireballs
         this.width = 15; // set # of tiles horizontally on map
         this.height = 10; // set # of tiles vertically on map
-        this.player; // create a new player
-        this.currentMousePosition = undefined;
-        this.deathDelayTicks = 0;
-        this.deathDelayLimit = 120;
+        this.currentMousePosition = undefined; // store current mouse position
+        this.deathDelayTicks = 0; // store number of ticks since player death (player hasnt died yet)
+        this.deathDelayLimit = 120; // store number of ticks until game ends after player's death
+        const playerPosition = ARENAS[this.arenaType]["playerStartPosition"]; // get player position
+        this.player = new Player(playerPosition.getX(), playerPosition.getY(), this); // create player at player position
     }
 
     // method to generate arena layout
@@ -39,12 +39,8 @@ class Arena {
             for (let enemy of ARENAS[this.arenaType]["spawnedEnemies"]) { // iterate through all enemies supposed to be spawned
                 this.spawnEnemy(enemy); // spawn all of the enemies
             }
-            const playerPosition = ARENAS[this.arenaType]["playerStartPosition"]; // get player position
-            console.log("playerPosition")
-            this.player = new Player(playerPosition.getX(), playerPosition.getY(), this); // create player at player position
         } else { // arena type is unknown and a random arena is generated
             this.obstructions = []; // generate no walls if ID is not valid
-            this.player = new Player(1, 1, this); // create player at 1, 1 coordinates
         }
     }
 
@@ -56,7 +52,6 @@ class Arena {
 
     // method to update the arena every tick
     tick(buttonsPressed) {
-        console.log("1")
         if (this.player.getIfAlive()) { // check if the player is alive
             this.player.tick(buttonsPressed); // update the player every tick
         } else { // otherwise, player is dead
@@ -65,28 +60,22 @@ class Arena {
                 endGame(); // end the game
             }
         }
-        console.log("2")
         // tick all elements of the game
         for (let enemySpawner of this.enemySpawners) { // iterate through all enemy spawners
             enemySpawner.tick(); // tick enemy spawners
         }
-        console.log("3")
         for (let enemy of this.enemies) { // iterate through all enemies in the arena
             enemy.tick(); // tick all enemies
         }
-        console.log("4")
         for (let arrow of this.arrows) { // iterate through all arrows
             arrow.tick(); // tick all arrows
         }
-        console.log("5")
         for (let tower of this.towers) { // iterate through all towers
             tower.tick(); // tick all towers
         }
-        console.log("6")
         for (let fireball of this.fireballs) { // iterate through all fireballs
             fireball.tick(); // tick all fireballs
         }
-        console.log("7")
         // create enemy death mechanism
         for (let i = 0; i < this.enemies.length; i++) { // iterate through all enemies
             let enemy = this.enemies[i]; // get the enemy
@@ -326,17 +315,6 @@ class Arena {
         for (let fireball of this.fireballs) { // iterate through all fireballs
             fireball.draw(context); // draw all fireballs
         }
-
-        // context.fillStyle = "black";
-        // context.font = "60px Consolas";
-        // for (let x = 0; x < this.width; x++) { // iterate through all x coordinates
-        //     for (let y = 0; y < this.height; y++) { // iterate through all y coordinates
-        //         // context.rect(x * pixelsPerTile + pixelsXOffset, canvasHeight - ((y + 1) * pixelsPerTile + pixelsYOffset), pixelsPerTile, pixelsPerTile); // draw a white border around each tile
-        //         let heatmapValue = this.player.getPathfindingAlgorithm().heatmap[`(${x}, ${y})`];
-        //         let pixels = this.coordsToPixels(new Vector2(x, y));
-        //         context.fillText(Math.round(heatmapValue), pixels.getX(), pixels.getY(), pixelsPerTile);
-        //     }
-        // }
     }
 
     // method to get the player in the arena

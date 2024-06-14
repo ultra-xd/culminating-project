@@ -452,7 +452,6 @@ class Arrow {
     // method to draw arrow
     draw(context) {
         const pixelCoords = this.arena.coordsToPixels(this.position); // get pixel coordinates of arrow
-        // console.log(pixelCoords)
         const unitLength = this.arena.getUnitLength(); // get the # of pixels in one tile
 
         // rotate the image of the arrow so that tip goes in direction of velocity of arrow

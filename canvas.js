@@ -8,7 +8,6 @@ class Canvas {
         this.buttonsPressed = []; // create array to store all of the keys being pressed
         this.attachKeybinds(); // create event listeners for keybinds
         this.handler = new Handler(this); // create a new handler to handle all objects in the game
-        console.log("handler")
         this.mousePosition = undefined; // store mouse position
         this.loop; // store interval loop variable
     }
@@ -79,7 +78,6 @@ class Canvas {
 
             event.preventDefault(); // register that event is processed
         });
-        console.log("attach")
     }
 
     // button to detach all key binds by removing all event listeners
@@ -103,7 +101,6 @@ class Canvas {
         // update the width and height of the canvas to match the available space
         this.HTMLElement.width = window.innerWidth;
         this.HTMLElement.height = window.innerHeight;
-        console.log("tick");
         this.handler.tick(this.buttonsPressed); // update the game every tick
         // remove left & right mouse button events so that they are only processed once
         if (arrayIncludes(this.buttonsPressed, "LMB1")) { // check if there is a left mouse button press event
@@ -118,7 +115,6 @@ class Canvas {
         if (arrayIncludes(this.buttonsPressed, "RMB2")) { // check if there is a right mouse button release event
             arrayDelete(this.buttonsPressed, arrayIndexOf(this.buttonsPressed, "RMB2")); // remove right mouse button release event
         }
-        console.log("draw")
         this.handler.draw(); // draw the game display
     }
 

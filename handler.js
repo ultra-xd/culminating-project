@@ -4,7 +4,6 @@
 class Handler {
     constructor(canvas) {
         this.canvas = canvas; // store canvas
-        console.log("canvas")
         this.arena = new Arena(); // create a new arena
         
     }

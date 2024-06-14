@@ -56,7 +56,6 @@ class PathfindingAlgorithm {
 
         // repeat while there is still nodes to check
         while (unvisitedNodes.length != 0) {
-            console.log("e")
             for (let node of PathfindingAlgorithm.NEIGHBOURS) { // iterate through each neighbour node
                 let point = new Vector2(currentX + node.getX(), currentY + node.getY()); // get coordinates of neighbour node
                 let pointString = point.toString(); // get string representation of node to put in object
@@ -74,7 +73,6 @@ class PathfindingAlgorithm {
                         }
                     }
                 } else { // otherwise, tile is a wall
-                    console.log("wall")
                     this.heatmap[pointString] = 65535; // add tile to heatmap with extremely large distance so that the algorithm pathfinds out of the wall
                     // we don't need to add this tile to the list of unvisited nodes since it is a wall
                 }
